@@ -53,7 +53,7 @@ $usuarios = $stmt->fetchAll();
                     <th>Nome</th>
                     <th>Email</th>
                     <th>Status</th>
-                    <th>Ativar/Desativar</th>
+                    <th>Activar/Desactivar</th>
                 </tr>
             </thead>
             <tbody>
