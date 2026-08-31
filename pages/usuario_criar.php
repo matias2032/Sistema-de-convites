@@ -1,5 +1,5 @@
 <?php
-require_once 'conexao.php';
+require_once '../services/conexao.php';
 checarSessao();
 
 $msg = "";
@@ -22,7 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="pt">
 <head><title>Criar Usuário</title>
-<link rel="stylesheet" href="css/estilo.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/estilo.css">
+<script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <a href="dashboard.php">Voltar</a> | <a href="usuarios_lista.php">Listar Usuários</a>

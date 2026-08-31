@@ -1,5 +1,5 @@
 <?php
-require_once 'conexao.php';
+require_once '../services/conexao.php';
 require_once 'fpdf/fpdf.php'; 
 
 $id = $_GET['id'] ?? null;

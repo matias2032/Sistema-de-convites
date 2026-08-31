@@ -1,5 +1,5 @@
 <?php
-require_once 'conexao.php';
+require_once '../services/conexao.php';
 checarSessao();
 
 $db = (new Conexao())->getConexao();
@@ -41,7 +41,9 @@ $stmt->execute([
 <!DOCTYPE html>
 <html lang="pt">
 <head><title><?= $id ? 'Editar' : 'Novo' ?> Convidado</title>
-<link rel="stylesheet" href="css/estilo.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/estilo.css">
+<script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <a href="convidados_lista.php">Voltar</a>

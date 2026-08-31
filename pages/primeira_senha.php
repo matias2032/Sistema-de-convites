@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'conexao.php';
+require_once '../services/conexao.php';
 
 if (!isset($_SESSION['id_usuario']) || !$_SESSION['primeira_senha']) {
     header("Location: login.php");
@@ -32,7 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="pt">
 <head><title>Primeira Troca de Senha</title>
-<link rel="stylesheet" href="css/estilo.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css/estilo.css">
+<script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <h2>Primeiro Acesso - Troca Obrigatoria de Senha</h2>

@@ -1,5 +1,8 @@
 <?php
-require_once 'conexao.php';
+require_once '../services/conexao.php';
+ob_start();
+include_once '../widgets/sidebar.php';
+$sidebar_html = ob_get_clean();
 checarSessao();
 
 $db = (new Conexao())->getConexao();
@@ -28,8 +31,11 @@ $usuarios = $stmt->fetchAll();
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Usuários</title>
-    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <script src="../js/darkmode.js" defer></script>
+    <script src="../js/sidebar.js" defer></script>
     <style>
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -40,12 +46,16 @@ $usuarios = $stmt->fetchAll();
     </style>
 </head>
 <body>
-    <a href="dashboard.php">Voltar</a> | <a href="usuario_criar.php">Novo Usuário</a>
-    <h2>Outros Usuários do Sistema</h2>
+    <div class="app-layout">
+        <?= $sidebar_html ?>
+        <main class="main-content">
+            <a href="dashboard.php">Voltar</a> | <a href="usuario_criar.php">Novo Usuário</a>
+            <h2>Outros Usuários do Sistema</h2>
     
     <?php if (empty($usuarios)): ?>
         <p>Nenhum outro usuário cadastrado no momento.</p>
     <?php else: ?>
+        <div class="table-responsive">
         <table border="1" cellpadding="8" cellspacing="0">
             <thead>
                 <tr>
@@ -74,6 +84,9 @@ $usuarios = $stmt->fetchAll();
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     <?php endif; ?>
+        </main>
+    </div>
 </body>
 </html>

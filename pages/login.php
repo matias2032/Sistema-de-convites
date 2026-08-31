@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'conexao.php';
+require_once '../services/conexao.php';
 
 $erro = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $_SESSION['id_usuario'] = $user['id_usuario'];
             $_SESSION['nome'] = $user['nome'];
+            $_SESSION['email'] = $user['email']; // <-- Salva o e-mail na sessão
             $_SESSION['primeira_senha'] = $user['primeira_senha'];
 
             if ($user['primeira_senha']) {
@@ -34,8 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="pt">
-<head><title>Login</title>
-<link rel="stylesheet" href="css/estilo.css">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <h2>Login</h2>

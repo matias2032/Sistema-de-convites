@@ -1,5 +1,8 @@
 <?php
-require_once 'conexao.php';
+require_once '../services/conexao.php';
+ob_start();
+include_once '../widgets/sidebar.php';
+$sidebar_html = ob_get_clean();
 checarSessao();
 
 $db = (new Conexao())->getConexao();
@@ -15,12 +18,19 @@ $url_base  = $protocolo . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_
 <head>
     <meta charset="UTF-8">
     <title>Lista de Convidados</title>
-    <link rel="stylesheet" href="css/estilo.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <script src="../js/darkmode.js" defer></script>
+    <script src="../js/sidebar.js" defer></script>
 </head>
 <body>
-    <a href="dashboard.php">Voltar</a> | <a href="convidado_form.php">Novo Convidado</a>
-    <h2>Convidados</h2>
-    <table border="1" cellpadding="8" cellspacing="0">
+    <div class="app-layout">
+        <?= $sidebar_html ?>
+        <main class="main-content">
+            <a href="dashboard.php">Voltar</a> | <a href="convidado_form.php">Novo Convidado</a>
+            <h2>Convidados</h2>
+            <div class="table-responsive">
+            <table border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
                 <th>Código</th>
@@ -61,6 +71,9 @@ $url_base  = $protocolo . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_
             </tr>
             <?php endforeach; ?>
         </tbody>
-    </table>
+            </table>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
