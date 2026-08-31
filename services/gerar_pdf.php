@@ -1,6 +1,6 @@
 <?php
 require_once '../services/conexao.php';
-require_once 'fpdf/fpdf.php'; 
+require_once '../fpdf/fpdf.php'; 
 
 $id = $_GET['id'] ?? null;
 if (!$id) die("Convidado não encontrado.");
@@ -33,17 +33,20 @@ $cor_f = hex2rgb($cfg['cor_fundo'] ?? '#ffffff');
 $pdf = new FPDF('P', 'mm', [148, 150]);
 
 // Configuração das fontes customizadas
+// __DIR__ = pasta atual (services/); ../fontes = raiz do projeto → pasta fontes/
+$pasta_fontes = __DIR__ . '/../fontes/';
+
 $fontes_customizadas = [
-    'AlexBrush'          => ['path' => 'fontes/Alex_Brush/AlexBrush-Regular', 'size' => 24],
-    'PinyonScript'       => ['path' => 'fontes/Pinyon_Script/PinyonScript-Regular', 'size' => 24],
-    'Cinzel'             => ['path' => 'fontes/Cinzel/Cinzel-Regular', 'size' => 17],
-    'CinzelDecorative'   => ['path' => 'fontes/Cinzel_Decorative/CinzelDecorative-Regular', 'size' => 15],
-    'CormorantGaramond'  => ['path' => 'fontes/Cormorant_Garamond/CormorantGaramond-Regular', 'size' => 19],
-    'PlayfairDisplay'    => ['path' => 'fontes/Playfair_Display/PlayfairDisplay-Regular', 'size' => 17],
-    'Merriweather'       => ['path' => 'fontes/Merriweather/Merriweather-Regular', 'size' => 16],
-    'Montserrat'         => ['path' => 'fontes/Montserrat/Montserrat-Regular', 'size' => 15],
-    'Roboto'             => ['path' => 'fontes/Roboto/Roboto-Regular', 'size' => 15],
-    'Inter'              => ['path' => 'fontes/Inter/Inter-Regular', 'size' => 15]
+    'AlexBrush'          => ['path' => $pasta_fontes . 'Alex_Brush/AlexBrush-Regular', 'size' => 24],
+    'PinyonScript'       => ['path' => $pasta_fontes . 'Pinyon_Script/PinyonScript-Regular', 'size' => 24],
+    'Cinzel'             => ['path' => $pasta_fontes . 'Cinzel/Cinzel-Regular', 'size' => 17],
+    'CinzelDecorative'   => ['path' => $pasta_fontes . 'Cinzel_Decorative/CinzelDecorative-Regular', 'size' => 15],
+    'CormorantGaramond'  => ['path' => $pasta_fontes . 'Cormorant_Garamond/CormorantGaramond-Regular', 'size' => 19],
+    'PlayfairDisplay'    => ['path' => $pasta_fontes . 'Playfair_Display/PlayfairDisplay-Regular', 'size' => 17],
+    'Merriweather'       => ['path' => $pasta_fontes . 'Merriweather/Merriweather-Regular', 'size' => 16],
+    'Montserrat'         => ['path' => $pasta_fontes . 'Montserrat/Montserrat-Regular', 'size' => 15],
+    'Roboto'             => ['path' => $pasta_fontes . 'Roboto/Roboto-Regular', 'size' => 15],
+    'Inter'              => ['path' => $pasta_fontes . 'Inter/Inter-Regular', 'size' => 15]
 ];
 
 // Registra a fonte no FPDF
@@ -64,7 +67,7 @@ $pdf->Rect(0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight(), 'F');
 
 // 2. Moldura (Preenche as dimensões exatas do cartão)
 if (!empty($cfg['imagem_fundo']) && $cfg['imagem_fundo'] !== 'nenhuma') {
-    $caminho_moldura = 'img/molduras/' . $cfg['imagem_fundo'];
+    $caminho_moldura = '../img/molduras/' . $cfg['imagem_fundo'];
     if (file_exists($caminho_moldura)) {
         $pdf->Image($caminho_moldura, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight());
     }

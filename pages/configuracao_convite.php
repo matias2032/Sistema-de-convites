@@ -149,10 +149,9 @@ $config = $stmt->fetch();
                     <option value="moldura_boho3.png">Boho 3</option>
                     <option value="moldura_boho4.png">Boho 4</option>
                     <option value="moldura_boho5.png">Boho 5</option>
-                    <!-- <option value="moldura_boho6.png">Boho 6</option>
-                    <option value="moldura_boho7.png">Boho 7</option> -->
+                    <option value="moldura_boho7.png">Boho 7</option>
                     <option value="moldura_geometrica1.png">Geométrico Ouro 1</option>
-                     <option value="moldura_geometrica2.png">Geométrico Ouro 2</option>
+                    <option value="moldura_geometrica2.png">Geométrico Ouro 2</option>
                 </select>
 
                 <label><b>Instrução do Rodapé:</b></label>
@@ -252,7 +251,7 @@ $config = $stmt->fetch();
         prevBox.style.fontFamily = fontMap[selectFonte.value] || 'Arial, sans-serif';
 
         if (selectImg.value && selectImg.value !== 'nenhuma') {
-            prevBox.style.backgroundImage = `url('img/molduras/${selectImg.value}')`;
+            prevBox.style.backgroundImage = `url('../img/molduras/${selectImg.value}')`;
             prevBox.style.backgroundSize = '100% 100%';
             prevBox.style.backgroundRepeat = 'no-repeat';
         } else {

@@ -46,7 +46,7 @@ $url_base  = $protocolo . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_
                 $telefone_limpo = preg_replace('/[^0-9]/', '', $c['telefone']);
                 
                 // Link direto de download/visualização do PDF para o convidado
-                $link_pdf = $url_base . "/gerar_pdf.php?id=" . $c['id_convidado'];
+                $link_pdf = $url_base . "../services/gerar_pdf.php?id=" . $c['id_convidado'];
                 
                 // Mensagem contendo o código E o link do PDF
                 $texto_mensagem = "Olá " . $c['nome_completo'] . "!\n\nO seu código de acesso é: *" . $c['codigo_unico'] . "*.\n\nBaixe seu convite em PDF aqui: " . $link_pdf;
@@ -60,7 +60,7 @@ $url_base  = $protocolo . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_
                 <td><?= htmlspecialchars($c['status']) ?></td>
                 <td>
                     <a href="convidado_form.php?id=<?= $c['id_convidado'] ?>">Editar</a> | 
-                    <a href="gerar_pdf.php?id=<?= $c['id_convidado'] ?>" target="_blank">📄 PDF</a> | 
+                    <a href="../services/gerar_pdf.php?id=<?= $c['id_convidado'] ?>" target="_blank">📄 PDF</a> | 
                     
                     <?php if (!empty($telefone_limpo)): ?>
                         <a href="https://wa.me/<?= $telefone_limpo ?>?text=<?= $mensagem_wa ?>" target="_blank" style="color: green;">📱 Enviar Convite via WhatsApp</a>
