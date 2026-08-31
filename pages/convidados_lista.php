@@ -27,7 +27,7 @@ $url_base  = $protocolo . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_
     <div class="app-layout">
         <?= $sidebar_html ?>
         <main class="main-content">
-            <a href="dashboard.php">Voltar</a> | <a href="convidado_form.php">Novo Convidado</a>
+         
             <h2>Convidados</h2>
             <div class="table-responsive">
             <table border="1" cellpadding="8" cellspacing="0">
@@ -73,6 +73,7 @@ $url_base  = $protocolo . "://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_
         </tbody>
             </table>
             </div>
+            <a href="convidado_form.php" class="fab-btn" title="Novo Convidado" aria-label="Novo Convidado">+</a>
         </main>
     </div>
 </body>

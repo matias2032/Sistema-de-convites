@@ -75,9 +75,6 @@
     padding: 0;
 }
 
-html, body {
-    overflow-x: hidden;
-}
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -335,6 +332,42 @@ input:checked + .slider:before {
     background-color: var(--msg-success-bg);
     color: var(--msg-success-text);
     border-left: 4px solid var(--msg-success-border);
+}
+
+/* 8.1 BOTÃO FLUTUANTE (FAB) */
+.fab-btn {
+    position: fixed;
+    bottom: 60px;
+    right: 60px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background-color: var(--primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: var(--shadow-md);
+    z-index: 150;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.fab-btn:hover {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+    transform: scale(1.05);
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .fab-btn {
+        bottom: 20px;
+        right: 20px;
+    }
 }
 
 /* ==========================================================

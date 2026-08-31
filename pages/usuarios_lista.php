@@ -49,7 +49,6 @@ $usuarios = $stmt->fetchAll();
     <div class="app-layout">
         <?= $sidebar_html ?>
         <main class="main-content">
-            <a href="dashboard.php">Voltar</a> | <a href="usuario_criar.php">Novo Usuário</a>
             <h2>Outros Usuários do Sistema</h2>
     
     <?php if (empty($usuarios)): ?>
@@ -86,6 +85,7 @@ $usuarios = $stmt->fetchAll();
         </table>
         </div>
     <?php endif; ?>
+            <a href="usuario_criar.php" class="fab-btn" title="Novo Usuário" aria-label="Novo Usuário">+</a>
         </main>
     </div>
 </body>

@@ -73,7 +73,7 @@ $config = $stmt->fetch();
         <?= $sidebar_html ?>
         <main class="main-content">
         <div class="container" style="max-width: 1100px;">
-            <a href="dashboard.php">← Voltar ao Dashboard</a>
+   
     <h2>🎨 Personalizar Design do Convite</h2>
     
     <?php if($msg) echo "<div class='msg-sucesso'>$msg</div>"; ?>
