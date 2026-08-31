@@ -1,5 +1,6 @@
 <?php
 require_once '../services/conexao.php';
+include '../widgets/botao_voltar.php';
 checarSessao();
 
 $db = (new Conexao())->getConexao();
@@ -27,13 +28,20 @@ $user = $stmt->fetch();
 <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
-    <a href="dashboard.php">Voltar</a>
-    <h2>Editar Meu Perfil</h2>
-    <?php if($msg) echo "<p style='color:green;'>$msg</p>"; ?>
-    <form method="POST">
-        <input type="text" name="nome" value="<?= htmlspecialchars($user['nome']) ?>" required><br><br>
-        <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required><br><br>
-        <button type="submit">Atualizar</button>
-    </form>
+    <div class="container">
+        <?php
+            $voltar_href = 'dashboard.php';
+            $titulo_pagina = 'Editar Meu Perfil';
+        
+        ?>
+        <?php if($msg) echo "<p class='msg-sucesso'>$msg</p>"; ?>
+        <div class="form-wrapper">
+            <form method="POST">
+                <input type="text" name="nome" value="<?= htmlspecialchars($user['nome']) ?>" required>
+                <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
+                <button type="submit">Atualizar</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

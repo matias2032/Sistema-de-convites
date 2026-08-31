@@ -43,12 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
-    <h2>Login</h2>
-    <?php if($erro) echo "<p style='color:red;'>$erro</p>"; ?>
-    <form method="POST">
-        <input type="email" name="email" placeholder="E-mail" required><br><br>
-        <input type="password" name="senha" placeholder="Senha" required><br><br>
-        <button type="submit">Entrar</button>
-    </form>
+    <div class="container pagina-form">
+        <h2>Login</h2>
+        <?php if($erro) echo "<p class='msg-erro'>$erro</p>"; ?>
+        <div class="form-wrapper">
+            <form method="POST">
+                <input type="email" name="email" placeholder="E-mail" required>
+                <input type="password" name="senha" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

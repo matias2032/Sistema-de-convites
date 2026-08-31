@@ -1,5 +1,6 @@
 <?php
 require_once '../services/conexao.php';
+     include '../widgets/botao_voltar.php';
 checarSessao();
 
 $db = (new Conexao())->getConexao();
@@ -46,14 +47,21 @@ $stmt->execute([
 <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
-    <a href="convidados_lista.php">Voltar</a>
-    <h2><?= $id ? 'Editar' : 'Novo' ?> Convidado</h2>
-    <form method="POST">
-        <input type="text" name="nome_completo" value="<?= htmlspecialchars($convidado['nome_completo']) ?>" placeholder="Nome Completo" required><br><br>
-        <input type="text" name="documento_id" value="<?= htmlspecialchars($convidado['documento_id']) ?>" placeholder="Documento (BI/Passaporte)" required><br><br>
-        <input type="email" name="email" value="<?= htmlspecialchars($convidado['email']) ?>" placeholder="E-mail"><br><br>
-        <input type="text" name="telefone" value="<?= htmlspecialchars($convidado['telefone']) ?>" placeholder="Telefone"><br><br>
-        <button type="submit">Salvar</button>
-    </form>
+    <div class="container">
+        <?php
+            $voltar_href = 'convidados_lista.php';
+            $titulo_pagina = ($id ? 'Editar' : 'Novo') . ' Convidado';
+       
+        ?>
+        <div class="form-wrapper">
+            <form method="POST">
+                <input type="text" name="nome_completo" value="<?= htmlspecialchars($convidado['nome_completo']) ?>" placeholder="Nome Completo" required>
+                <input type="text" name="documento_id" value="<?= htmlspecialchars($convidado['documento_id']) ?>" placeholder="Documento (BI/Passaporte)" required>
+                <input type="email" name="email" value="<?= htmlspecialchars($convidado['email']) ?>" placeholder="E-mail">
+                <input type="text" name="telefone" value="<?= htmlspecialchars($convidado['telefone']) ?>" placeholder="Telefone">
+                <button type="submit">Salvar</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

@@ -37,12 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
-    <h2>Primeiro Acesso - Troca Obrigatoria de Senha</h2>
-    <?php if($erro) echo "<p style='color:red;'>$erro</p>"; ?>
-    <form method="POST">
-        <input type="password" name="nova_senha" placeholder="Nova Senha" required><br><br>
-        <input type="password" name="confirma_senha" placeholder="Confirme a Nova Senha" required><br><br>
-        <button type="submit">Salvar e Fazer Login</button>
-    </form>
+    <div class="container pagina-form">
+        <h2>Primeiro Acesso - Troca Obrigatória de Senha</h2>
+        <?php if($erro) echo "<p class='msg-erro'>$erro</p>"; ?>
+        <div class="form-wrapper">
+            <form method="POST">
+                <input type="password" name="nova_senha" placeholder="Nova Senha" required>
+                <input type="password" name="confirma_senha" placeholder="Confirme a Nova Senha" required>
+                <button type="submit">Salvar e Fazer Login</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

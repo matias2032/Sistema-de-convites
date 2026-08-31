@@ -1,5 +1,6 @@
 <?php
 require_once '../services/conexao.php';
+include '../widgets/botao_voltar.php';
 checarSessao();
 
 $id_usuario = $_GET['id'] ?? null;
@@ -34,9 +35,12 @@ $convidados = $stmtConv->fetchAll();
     <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
-    <div class="container">
-        <a href="usuarios_lista.php">← Voltar para Lista</a>
-        <h2>Detalhes do Usuário: <?= htmlspecialchars($usuario['nome']) ?></h2>
+<div class="container">
+    <?php
+        $voltar_href = 'usuarios_lista.php';
+        $titulo_pagina = 'Detalhes do Usuário: ' . $usuario['nome'];
+       
+    ?>
         
         <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px;">
             <p><b>E-mail:</b> <?= htmlspecialchars($usuario['email']) ?></p>

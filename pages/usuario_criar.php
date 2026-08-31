@@ -1,5 +1,6 @@
 <?php
 require_once '../services/conexao.php';
+include '../widgets/botao_voltar.php';
 checarSessao();
 
 $msg = "";
@@ -27,13 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
-    <a href="dashboard.php">Voltar</a> | <a href="usuarios_lista.php">Listar Usuários</a>
-    <h2>Cadastrar Novo Usuário</h2>
-    <?php if($msg) echo "<p>$msg</p>"; ?>
-    <form method="POST">
-        <input type="text" name="nome" placeholder="Nome Completo" required><br><br>
-        <input type="email" name="email" placeholder="E-mail" required><br><br>
-        <button type="submit">Salvar Usuário</button>
-    </form>
+    <div class="container">
+        <?php
+            $voltar_href = 'usuarios_lista.php';
+            $titulo_pagina = 'Cadastrar Novo Usuário';
+
+        ?>
+        <?php if($msg) echo "<p class='msg-sucesso'>$msg</p>"; ?>
+        <div class="form-wrapper">
+            <form method="POST">
+                <input type="text" name="nome" placeholder="Nome Completo" required>
+                <input type="email" name="email" placeholder="E-mail" required>
+                <button type="submit">Salvar Usuário</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
