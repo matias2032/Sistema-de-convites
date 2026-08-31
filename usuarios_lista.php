@@ -59,17 +59,18 @@ $usuarios = $stmt->fetchAll();
             <tbody>
                 <?php foreach ($usuarios as $u): ?>
                 <tr>
-                    <td><?= $u['id_usuario'] ?></td>
-                    <td><?= htmlspecialchars($u['nome']) ?></td>
-                    <td><?= htmlspecialchars($u['email']) ?></td>
-                    <td><?= $u['ativo'] ? 'Ativo' : 'Inativo' ?></td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" <?= $u['ativo'] ? 'checked' : '' ?> onchange="location.href='?toggle_id=<?= $u['id_usuario'] ?>'">
-                            <span class="slider"></span>
-                        </label>
-                    </td>
-                </tr>
+    <td><?= $u['id_usuario'] ?></td>
+    <td><?= htmlspecialchars($u['nome']) ?></td>
+    <td><?= htmlspecialchars($u['email']) ?></td>
+    <td><?= $u['ativo'] ? 'Ativo' : 'Inativo' ?></td>
+    <td>
+        <a href="usuario_detalhes.php?id=<?= $u['id_usuario'] ?>">🔍 Detalhes</a> | 
+        <label class="switch">
+            <input type="checkbox" <?= $u['ativo'] ? 'checked' : '' ?> onchange="location.href='?toggle_id=<?= $u['id_usuario'] ?>'">
+            <span class="slider"></span>
+        </label>
+    </td>
+</tr>
                 <?php endforeach; ?>
             </tbody>
         </table>

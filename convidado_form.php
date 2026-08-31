@@ -22,9 +22,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $db->prepare("UPDATE convidado SET nome_completo = :nome, documento_id = :doc, email = :email, telefone = :telefone WHERE id_convidado = :id");
         $stmt->execute([':nome' => $nome, ':doc' => $doc, ':email' => $email, ':telefone' => $telefone, ':id' => $id]);
     } else {
-        $codigo = 'GUEST-' . rand(1000, 9999);
-        $stmt = $db->prepare("INSERT INTO convidado (codigo_unico, nome_completo, documento_id, email, telefone) VALUES (:codigo, :nome, :doc, :email, :telefone)");
-        $stmt->execute([':codigo' => $codigo, ':nome' => $nome, ':doc' => $doc, ':email' => $email, ':telefone' => $telefone]);
+        $codigo = 'CONVIDADO-' . rand(1000, 9999);
+$criado_por = $_SESSION['id_usuario'];
+$stmt = $db->prepare("INSERT INTO convidado (codigo_unico, nome_completo, documento_id, email, telefone, criado_por) VALUES (:codigo, :nome, :doc, :email, :telefone, :criado_por)");
+$stmt->execute([
+    ':codigo'     => $codigo, 
+    ':nome'       => $nome, 
+    ':doc'        => $doc, 
+    ':email'      => $email, 
+    ':telefone'   => $telefone,
+    ':criado_por' => $criado_por
+]);
     }
     header("Location: convidados_lista.php");
     exit;
