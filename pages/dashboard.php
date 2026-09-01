@@ -2,7 +2,6 @@
 require_once '../services/conexao.php';
 session_start();
 
-// Função auxiliar de sessão se necessário
 if (!isset($_SESSION['id_usuario'])) {
     header('Location: login.php');
     exit;
@@ -10,20 +9,17 @@ if (!isset($_SESSION['id_usuario'])) {
 
 $db = (new Conexao())->getConexao();
 
-// Busca estatísticas agregadas dos convites
-$stmtTotal = $db->query("SELECT COUNT(*) AS total FROM convidado");
-$totalConvites = $stmtTotal->fetch()['total'] ?? 0;
+// Agregações de status
+$totalConvites = $db->query("SELECT COUNT(*) FROM convidado")->fetchColumn() ?? 0;
+$totalPendentes = $db->query("SELECT COUNT(*) FROM convidado WHERE status = 'PENDENTE'")->fetchColumn() ?? 0;
+$totalEmitidos = $db->query("SELECT COUNT(*) FROM convidado WHERE status = 'EMITIDO'")->fetchColumn() ?? 0;
+$totalCancelados = $db->query("SELECT COUNT(*) FROM convidado WHERE status = 'CANCELADO'")->fetchColumn() ?? 0;
 
-$stmtEmitidos = $db->query("SELECT COUNT(*) AS total FROM convidado WHERE status = 'EMITIDO'");
-$totalEmitidos = $stmtEmitidos->fetch()['total'] ?? 0;
+// Verifica se já existe qualquer configuração salva no banco
+$totalConfig = $db->query("SELECT COUNT(*) FROM configuracao_convite")->fetchColumn() ?? 0;
 
-$stmtPresentes = $db->query("SELECT COUNT(*) AS total FROM convidado WHERE status = 'PRESENTE'");
-$totalPresentes = $stmtPresentes->fetch()['total'] ?? 0;
-
-$stmtCancelados = $db->query("SELECT COUNT(*) AS total FROM convidado WHERE status = 'CANCELADO'");
-$totalCancelados = $stmtCancelados->fetch()['total'] ?? 0;
-
-$taxaPresenca = $totalConvites > 0 ? round(($totalPresentes / $totalConvites) * 100, 1) : 0;
+// Exibe a dica apenas se a tabela estiver vazia (ainda não personalizado)
+$exibirAvisoDesign = ($totalConfig == 0);
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -78,18 +74,17 @@ $taxaPresenca = $totalConvites > 0 ? round(($totalPresentes / $totalConvites) * 
 </head>
 <body>
     <div class="app-layout">
-        <!-- Renderização do Widget da Sidebar -->
         <?php include_once '../widgets/sidebar.php'; ?>
 
-        <!-- Conteúdo Principal -->
         <main class="main-content">
-            <!-- Botão Hambúrguer Visível apenas no Mobile se a Sidebar estiver fechada -->
             <button id="mobile-hamburger-btn" class="hamburger-btn mobile-only" aria-label="Abrir Menu">☰</button>
 
             <div class="container">
-                <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 12px 15px; margin-bottom: 20px; border-radius: 6px; color: #0369a1;">
-                    🎨 <b>Dica de Design:</b> Seu convite está usando o modelo padrão. <a href="configuracao_convite.php" style="font-weight: bold; text-decoration: underline; color: #0284c7;">Clique aqui para personalizar as cores e fontes do seu evento</a>.
-                </div>
+                <?php if ($exibirAvisoDesign): ?>
+                    <div style="background: #e0f2fe; border-left: 4px solid #0284c7; padding: 12px 15px; margin-bottom: 20px; border-radius: 6px; color: #0369a1;">
+                        🎨 <b>Dica de Design:</b> Seu convite está usando o modelo padrão. <a href="configuracao_convite.php" style="font-weight: bold; text-decoration: underline; color: #0284c7;">Clique aqui para personalizar</a>.
+                    </div>
+                <?php endif; ?>
 
                 <h2>Painel Principal</h2>
                 <p style="margin-bottom: 20px;">Bem-vindo, <b><?= htmlspecialchars($_SESSION['nome'] ?? $_SESSION['usuario_nome'] ?? '') ?></b>!</p>
@@ -100,20 +95,16 @@ $taxaPresenca = $totalConvites > 0 ? round(($totalPresentes / $totalConvites) * 
                         <div class="value"><?= $totalConvites ?></div>
                     </div>
                     <div class="kpi-card">
-                        <div class="title">Emitidos (Pendentes)</div>
-                        <div class="value" style="color: #2563eb;"><?= $totalEmitidos ?></div>
+                        <div class="title">Pendentes</div>
+                        <div class="value" style="color: #f59e0b;"><?= $totalPendentes ?></div>
                     </div>
                     <div class="kpi-card">
-                        <div class="title">Presentes (Validados)</div>
-                        <div class="value" style="color: #10b981;"><?= $totalPresentes ?></div>
+                        <div class="title">Emitidos</div>
+                        <div class="value" style="color: #2563eb;"><?= $totalEmitidos ?></div>
                     </div>
                     <div class="kpi-card">
                         <div class="title">Cancelados</div>
                         <div class="value" style="color: #ef4444;"><?= $totalCancelados ?></div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="title">Taxa de Presença</div>
-                        <div class="value" style="color: #8b5cf6;"><?= $taxaPresenca ?>%</div>
                     </div>
                 </div>
 
@@ -123,7 +114,7 @@ $taxaPresenca = $totalConvites > 0 ? round(($totalPresentes / $totalConvites) * 
                         <canvas id="chartStatus"></canvas>
                     </div>
                     <div class="chart-box">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 15px;">Proporção Entradas vs Pendentes</h3>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 15px;">Progresso dos Envios</h3>
                         <canvas id="chartComparativo"></canvas>
                     </div>
                 </div>
@@ -137,10 +128,10 @@ $taxaPresenca = $totalConvites > 0 ? round(($totalPresentes / $totalConvites) * 
             new Chart(ctxStatus, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Emitidos', 'Presentes', 'Cancelados'],
+                    labels: ['Pendentes', 'Emitidos', 'Cancelados'],
                     datasets: [{
-                        data: [<?= $totalEmitidos ?>, <?= $totalPresentes ?>, <?= $totalCancelados ?>],
-                        backgroundColor: ['#2563eb', '#10b981', '#ef4444']
+                        data: [<?= $totalPendentes ?>, <?= $totalEmitidos ?>, <?= $totalCancelados ?>],
+                        backgroundColor: ['#f59e0b', '#2563eb', '#ef4444']
                     }]
                 },
                 options: {
@@ -153,10 +144,10 @@ $taxaPresenca = $totalConvites > 0 ? round(($totalPresentes / $totalConvites) * 
             new Chart(ctxComp, {
                 type: 'bar',
                 data: {
-                    labels: ['Convites'],
+                    labels: ['Status dos Convites'],
                     datasets: [
-                        { label: 'Presentes', data: [<?= $totalPresentes ?>], backgroundColor: '#10b981' },
-                        { label: 'Pendentes', data: [<?= $totalEmitidos ?>], backgroundColor: '#2563eb' }
+                        { label: 'Pendentes', data: [<?= $totalPendentes ?>], backgroundColor: '#f59e0b' },
+                        { label: 'Emitidos', data: [<?= $totalEmitidos ?>], backgroundColor: '#2563eb' }
                     ]
                 },
                 options: {

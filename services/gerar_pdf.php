@@ -12,6 +12,15 @@ $convidado = $stmt->fetch();
 
 if (!$convidado) die("Convidado não existe.");
 
+// =========================================================================
+// ATUALIZAÇÃO AUTOMÁTICA DE STATUS: PENDENTE -> EMITIDO
+// =========================================================================
+if ($convidado['status'] === 'PENDENTE') {
+    $stmtUpdate = $db->prepare("UPDATE convidado SET status = 'EMITIDO' WHERE id_convidado = :id");
+    $stmtUpdate->execute([':id' => $id]);
+    $convidado['status'] = 'EMITIDO'; // Atualiza localmente
+}
+
 function hex2rgb($hex) {
     $hex = str_replace("#", "", $hex);
     return [
@@ -29,11 +38,10 @@ $cor_c = hex2rgb($cfg['cor_codigo']);
 $fonte = $cfg['fonte_familia'];
 $cor_f = hex2rgb($cfg['cor_fundo'] ?? '#ffffff');
 
-// Define tamanho customizado (Largura: 148mm, Altura: 150mm - Proporção exata do Preview)
+// Define tamanho customizado (Largura: 148mm, Altura: 150mm)
 $pdf = new FPDF('P', 'mm', [148, 150]);
 
 // Configuração das fontes customizadas
-// __DIR__ = pasta atual (services/); ../fontes = raiz do projeto → pasta fontes/
 $pasta_fontes = __DIR__ . '/../fontes/';
 
 $fontes_customizadas = [
@@ -65,7 +73,7 @@ $pdf->AddPage();
 $pdf->SetFillColor($cor_f[0], $cor_f[1], $cor_f[2]);
 $pdf->Rect(0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight(), 'F');
 
-// 2. Moldura (Preenche as dimensões exatas do cartão)
+// 2. Moldura
 if (!empty($cfg['imagem_fundo']) && $cfg['imagem_fundo'] !== 'nenhuma') {
     $caminho_moldura = '../img/molduras/' . $cfg['imagem_fundo'];
     if (file_exists($caminho_moldura)) {

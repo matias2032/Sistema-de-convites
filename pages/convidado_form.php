@@ -1,11 +1,12 @@
 <?php
 require_once '../services/conexao.php';
-     include '../widgets/botao_voltar.php';
+include '../widgets/botao_voltar.php';
 checarSessao();
 
 $db = (new Conexao())->getConexao();
 $id = $_GET['id'] ?? null;
 $convidado = ['nome_completo' => '', 'documento_id' => '', 'email' => '', 'telefone' => ''];
+$msg = "";
 
 if ($id) {
     $stmt = $db->prepare("SELECT * FROM convidado WHERE id_convidado = :id");
@@ -22,37 +23,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($id) {
         $stmt = $db->prepare("UPDATE convidado SET nome_completo = :nome, documento_id = :doc, email = :email, telefone = :telefone WHERE id_convidado = :id");
         $stmt->execute([':nome' => $nome, ':doc' => $doc, ':email' => $email, ':telefone' => $telefone, ':id' => $id]);
+        $msg = "Convidado atualizado com sucesso! Redirecionando...";
+            header("Refresh: 3; url=convidados_lista.php");
     } else {
         $codigo = 'CONVIDADO-' . rand(1000, 9999);
-$criado_por = $_SESSION['id_usuario'];
-$stmt = $db->prepare("INSERT INTO convidado (codigo_unico, nome_completo, documento_id, email, telefone, criado_por) VALUES (:codigo, :nome, :doc, :email, :telefone, :criado_por)");
-$stmt->execute([
-    ':codigo'     => $codigo, 
-    ':nome'       => $nome, 
-    ':doc'        => $doc, 
-    ':email'      => $email, 
-    ':telefone'   => $telefone,
-    ':criado_por' => $criado_por
-]);
+        $criado_por = $_SESSION['id_usuario'];
+        $stmt = $db->prepare("INSERT INTO convidado (codigo_unico, nome_completo, documento_id, email, telefone, criado_por) VALUES (:codigo, :nome, :doc, :email, :telefone, :criado_por)");
+        $stmt->execute([
+            ':codigo'     => $codigo, 
+            ':nome'       => $nome, 
+            ':doc'        => $doc, 
+            ':email'      => $email, 
+            ':telefone'   => $telefone,
+            ':criado_por' => $criado_por
+        ]);
+        $msg = "Convidado criado com sucesso! Redirecionando à lista...";
     }
-    header("Location: convidados_lista.php");
-    exit;
+
+    // Define o Refresh de 3 segundos sem o 'exit;' para renderizar o HTML
+    header("Refresh: 3; url=convidados_lista.php");
 }
 ?>
 <!DOCTYPE html>
 <html lang="pt">
-<head><title><?= $id ? 'Editar' : 'Novo' ?> Convidado</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/estilo.css">
-<script src="../js/darkmode.js" defer></script>
+<head>
+    <title><?= $id ? 'Editar' : 'Novo' ?> Convidado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <div class="container">
         <?php
             $voltar_href = 'convidados_lista.php';
             $titulo_pagina = ($id ? 'Editar' : 'Novo') . ' Convidado';
-       
         ?>
+
+        <!-- Exibe a mensagem de sucesso na tela -->
+        <?php if ($msg): ?>
+            <div class="msg-sucesso"><?= $msg ?></div>
+        <?php endif; ?>
+
         <div class="form-wrapper">
             <form method="POST">
                 <input type="text" name="nome_completo" value="<?= htmlspecialchars($convidado['nome_completo']) ?>" placeholder="Nome Completo" required>

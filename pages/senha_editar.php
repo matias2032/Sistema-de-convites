@@ -17,7 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hash = password_hash($nova, PASSWORD_DEFAULT);
         $stmt = $db->prepare("UPDATE usuario SET senha_hash = :hash WHERE id_usuario = :id");
         $stmt->execute([':hash' => $hash, ':id' => $_SESSION['id_usuario']]);
-        $msg = "Senha alterada com sucesso!";
+        $msg = "Senha alterada com sucesso! Redirecionando á dashboard...";
+        header("Refresh: 3; url=dashboard.php");
     } else {
         $msg = "Senha atual incorreta.";
     }

@@ -436,27 +436,24 @@ input:checked + .slider:before {
     flex-direction: column;
     justify-content: space-between;
     padding: 20px 15px;
-    transition: margin-left var(--transition-normal);
+    transition: all var(--transition-normal);
     z-index: 100;
     flex-shrink: 0;
 }
 
+
+/* Quando recolhida no Desktop */
 .sidebar.collapsed {
-    width: 0;
-    padding: 0;
-    margin: 0;
-    border: none;
-    overflow: visible; /* deixa o botão "vazar" para fora da área recolhida */
-    margin-left: -260px;
+    width: 70px; /* Mantém uma barra fina com o botão visível */
+    padding: 20px 10px;
 }
 
-/* Esconde o restante do conteúdo, mantendo só o botão de alternância */
+/* Esconde apenas os textos e o perfil, mantendo o header e botão de toggle visíveis */
 .sidebar.collapsed .sidebar-brand,
 .sidebar.collapsed .sidebar-nav,
 .sidebar.collapsed .profile-dropdown-container {
     display: none;
 }
-
 /* Mantém o botão sempre clicável e visível no desktop, mesmo com a sidebar recolhida */
 .sidebar.collapsed #toggle-sidebar {
     position: fixed;
@@ -469,12 +466,14 @@ input:checked + .slider:before {
     z-index: 200;
 }
 
+
+/* Removida a linha divisória do cabeçalho da sidebar */
 .sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none; /* Alterado de 1px solid para none */
     margin-bottom: 15px;
 }
 
@@ -659,12 +658,14 @@ input:checked + .slider:before {
         display: flex;
     }
 
-    .sidebar {
+.sidebar {
         position: fixed;
-        top: 53px; /* Compensação da altura do top-navbar */
-        bottom: 0;
+        top: 0;
         left: 0;
-        height: calc(100vh - 53px);
+        width: 80%; /* Ou 100% para cobrir toda a tela */
+        max-width: 300px;
+        height: 100vh;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
     }
 }
 

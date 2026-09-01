@@ -13,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $db->prepare("UPDATE usuario SET nome = :nome, email = :email WHERE id_usuario = :id");
     $stmt->execute([':nome' => $nome, ':email' => $email, ':id' => $_SESSION['id_usuario']]);
     $_SESSION['nome'] = $nome;
-    $msg = "Perfil atualizado!";
+    $msg = "Perfil atualizado! Redirecionando á dashboard...";
+    header("Refresh: 3; url=dashboard.php");
 }
 
 $stmt = $db->prepare("SELECT nome, email FROM usuario WHERE id_usuario = :id");

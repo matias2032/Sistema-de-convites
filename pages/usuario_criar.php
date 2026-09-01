@@ -14,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db = (new Conexao())->getConexao();
         $stmt = $db->prepare("INSERT INTO usuario (nome, email, senha_hash, primeira_senha, ativo) VALUES (:nome, :email, :hash, TRUE, TRUE)");
         $stmt->execute([':nome' => $nome, ':email' => $email, ':hash' => $hash]);
-        $msg = "Usuário cadastrado com sucesso! Senha padrão: <b>12345678</b>";
+        $msg = "Usuário cadastrado com sucesso! Senha padrão: <b>12345678</b>. Redirecionando á lista de usuários...";
+        header("Refresh: 3; url=usuarios_lista.php");
     } catch(PDOException $e) {
         $msg = "Erro ao cadastrar: " . $e->getMessage();
     }

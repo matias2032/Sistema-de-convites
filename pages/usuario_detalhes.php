@@ -42,7 +42,7 @@ $convidados = $stmtConv->fetchAll();
        
     ?>
         
-        <div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px;">
+        <div style="margin-bottom: 20px; padding: 15px; border-radius: 6px;">
             <p><b>E-mail:</b> <?= htmlspecialchars($usuario['email']) ?></p>
             <p><b>Status:</b> <?= $usuario['ativo'] ? 'Ativo' : 'Inativo' ?></p>
             <p><b>Cadastrado em:</b> <?= date('d/m/Y H:i', strtotime($usuario['criado_em'])) ?></p>
