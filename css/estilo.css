@@ -766,6 +766,40 @@ button i {
     padding-right: 38px;
 }
 
+/* Container do convite com margem interna de segurança (Padding) */
+#preview-box {
+    position: relative;
+    box-sizing: border-box;
+    padding: 35px 50px !important; /* Evita que o texto encoste na moldura floral */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 440px;
+}
+
+/* Tipografia de suporte legível para textos secundarios */
+.text-suporte {
+    font-family: 'Montserrat', sans-serif !important;
+    letter-spacing: 0.5px;
+}
+
+/* Separador Elegante */
+.divisor-ornamento {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+    opacity: 0.6;
+    border: none !important; /* Remove qualquer linha rígida preta */
+}
+.divisor-ornamento::before, 
+.divisor-ornamento::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid currentColor;
+    margin: 0 10px;
+}
+
 /* 7. REGRAS RESPONSIVAS (MOBILE) */
 @media (max-width: 768px) {
     .top-navbar {
