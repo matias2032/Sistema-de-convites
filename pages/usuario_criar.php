@@ -7,7 +7,7 @@ $msg = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = trim($_POST['nome']);
     $email = trim($_POST['email']);
-    $senha_padrao = "12345678"; // Senha automatica conforme regra (1 a 8)
+    $senha_padrao = "12345678"; 
     $hash = password_hash($senha_padrao, PASSWORD_DEFAULT);
 
     try {
@@ -23,24 +23,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="pt">
-<head><title>Criar Usuário</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/estilo.css">
-<script src="../js/darkmode.js" defer></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Usuário</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <div class="container">
         <?php
             $voltar_href = 'usuarios_lista.php';
             $titulo_pagina = 'Cadastrar Novo Usuário';
-
         ?>
         <?php if($msg) echo "<p class='msg-sucesso'>$msg</p>"; ?>
         <div class="form-wrapper">
             <form method="POST">
-                <input type="text" name="nome" placeholder="Nome Completo" required>
-                <input type="email" name="email" placeholder="E-mail" required>
-                <button type="submit">Salvar Usuário</button>
+                <div class="input-group">
+                    <i class="fa-solid fa-user-plus input-icon"></i>
+                    <input type="text" name="nome" placeholder="Nome Completo" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="email" name="email" placeholder="E-mail" required>
+                </div>
+
+                <button type="submit">
+                    <i class="fa-solid fa-user-check"></i> Salvar Usuário
+                </button>
             </form>
         </div>
     </div>

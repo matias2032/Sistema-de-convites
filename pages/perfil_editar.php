@@ -23,24 +23,36 @@ $user = $stmt->fetch();
 ?>
 <!DOCTYPE html>
 <html lang="pt">
-<head><title>Editar Perfil</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/estilo.css">
-<script src="../js/darkmode.js" defer></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Perfil</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="../js/darkmode.js" defer></script>
 </head>
 <body>
     <div class="container">
         <?php
             $voltar_href = 'dashboard.php';
             $titulo_pagina = 'Editar Meu Perfil';
-        
         ?>
         <?php if($msg) echo "<p class='msg-sucesso'>$msg</p>"; ?>
         <div class="form-wrapper">
             <form method="POST">
-                <input type="text" name="nome" value="<?= htmlspecialchars($user['nome']) ?>" required>
-                <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
-                <button type="submit">Atualizar</button>
+                <div class="input-group">
+                    <i class="fa-solid fa-user input-icon"></i>
+                    <input type="text" name="nome" value="<?= htmlspecialchars($user['nome']) ?>" placeholder="Nome Completo" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" placeholder="E-mail" required>
+                </div>
+
+                <button type="submit">
+                    <i class="fa-solid fa-floppy-disk"></i> Atualizar
+                </button>
             </form>
         </div>
     </div>

@@ -26,25 +26,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="pt">
-<head><title>Alterar Senha</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/estilo.css">
-<script src="../js/darkmode.js" defer></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Alterar Senha</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="../js/darkmode.js" defer></script>
+    <script src="../js/toggle-senha.js" defer></script>
 </head>
 <body>
     <div class="container">
         <?php
             $voltar_href = 'dashboard.php';
             $titulo_pagina = 'Alterar Minha Senha';
-
         ?>
         <?php if($msg) echo "<p class='msg-sucesso'>$msg</p>"; ?>
         <div class="form-wrapper">
-            <form method="POST">
-                <input type="password" name="senha_atual" placeholder="Senha Atual" required>
-                <input type="password" name="nova_senha" placeholder="Nova Senha" required>
-                <button type="submit">Atualizar Senha</button>
-            </form>
+<form method="POST">
+    <div class="input-group">
+        <i class="fa-solid fa-lock input-icon"></i>
+        <input type="password" name="senha_atual" placeholder="Senha Atual" required>
+        <button type="button" class="toggle-senha" aria-label="Mostrar/Ocultar Senha">
+            <i class="fa-solid fa-eye"></i>
+        </button>
+    </div>
+    
+    <div class="input-group">
+        <i class="fa-solid fa-key input-icon"></i>
+        <input type="password" name="nova_senha" placeholder="Nova Senha" required>
+        <button type="button" class="toggle-senha" aria-label="Mostrar/Ocultar Senha">
+            <i class="fa-solid fa-eye"></i>
+        </button>
+    </div>
+
+    <button type="submit">
+        <i class="fa-solid fa-floppy-disk"></i> Atualizar Senha
+    </button>
+</form>
         </div>
     </div>
 </body>

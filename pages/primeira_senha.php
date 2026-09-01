@@ -31,21 +31,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="pt">
-<head><title>Primeira Troca de Senha</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../css/estilo.css">
-<script src="../js/darkmode.js" defer></script>
+<head>
+    <meta charset="UTF-8">
+    <title>Primeira Troca de Senha</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="../js/darkmode.js" defer></script>
+    <script src="../js/toggle-senha.js" defer></script>
 </head>
 <body>
     <div class="container pagina-form">
-        <h2>Primeiro Acesso - Troca Obrigatória de Senha</h2>
+        <h2>Primeiro Acesso (Troca Obrigatória de Senha)</h2>
         <?php if($erro) echo "<p class='msg-erro'>$erro</p>"; ?>
         <div class="form-wrapper">
-            <form method="POST">
-                <input type="password" name="nova_senha" placeholder="Nova Senha" required>
-                <input type="password" name="confirma_senha" placeholder="Confirme a Nova Senha" required>
-                <button type="submit">Salvar e Fazer Login</button>
-            </form>
+<form method="POST">
+    <div class="input-group">
+        <i class="fa-solid fa-key input-icon"></i>
+        <input type="password" name="nova_senha" placeholder="Nova Senha" required>
+        <button type="button" class="toggle-senha" aria-label="Mostrar/Ocultar Senha">
+            <i class="fa-solid fa-eye"></i>
+        </button>
+    </div>
+
+    <div class="input-group">
+        <i class="fa-solid fa-shield-halved input-icon"></i>
+        <input type="password" name="confirma_senha" placeholder="Confirme a Nova Senha" required>
+        <button type="button" class="toggle-senha" aria-label="Mostrar/Ocultar Senha">
+            <i class="fa-solid fa-eye"></i>
+        </button>
+    </div>
+
+    <button type="submit">
+        <i class="fa-solid fa-floppy-disk"></i> Salvar e Fazer Login
+    </button>
+</form>
         </div>
     </div>
 </body>

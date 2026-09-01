@@ -21,6 +21,7 @@ $url_base = $protocolo . "://" . $_SERVER['HTTP_HOST'] . $caminho_atual . "/";
     <title>Lista de Convidados</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../css/estilo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="../js/darkmode.js" defer></script>
     <script src="../js/sidebar.js" defer></script>
     <style>

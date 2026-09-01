@@ -228,44 +228,78 @@ button[type="submit"]:active, .btn:active {
     transform: translateY(0);
 }
 
-/* 6. TABELAS DE DADOS RESPONSIVAS */
+/* ==========================================================
+   6. TABELAS DE DADOS RESPONSIVAS (CLEAN & MINIMALISTA)
+   ========================================================== */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
-    margin-top: 15px;
+    border-radius: var(--radius-md);
+    border: none; /* Removida a borda externa */
+    background: transparent;
+    box-shadow: none; /* Removida a sombra pesada */
+    margin-top: 20px;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse;
-    background: var(--bg-card);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.90rem;
 }
 
-th, td {
-    padding: 14px 16px;
+/* Cabeçalho limpo no tom primário */
+th {
+    background-color: var(--primary);
+    color: #ffffff;
+    font-size: 0.80rem;
+    font-weight: 600;
+    padding: 14px 20px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    border: none; /* Sem bordas no cabeçalho */
+    white-space: nowrap;
+}
+
+/* Arredondamento suave nos cantos superiores do theader */
+tr:first-child th:first-child {
+    border-top-left-radius: var(--radius-md);
+}
+
+tr:first-child th:last-child {
+    border-top-right-radius: var(--radius-md);
+}
+
+/* Células sem bordas inferiores */
+td {
+    padding: 14px 20px;
+    color: var(--text-primary);
+    border: none; /* Sem linhas divisórias grossas */
+    vertical-align: middle;
     transition: background-color var(--transition-fast);
 }
 
-th {
-    background-color: var(--table-header-bg);
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 700;
+/* Zebra alternada (linhas pares com leve fundo contrastante) */
+tbody tr:nth-child(even) td {
+    background-color: var(--table-header-bg); /* Reutiliza o tom suave do tema */
 }
 
-tr:last-child td {
-    border-bottom: none;
+tbody tr:nth-child(odd) td {
+    background-color: var(--bg-card);
 }
 
-tr:hover td {
+/* Efeito Hover sutil ao passar o mouse */
+tbody tr:hover td {
     background-color: var(--table-hover);
+}
+
+/* Arredondamento nos cantos inferiores da última linha */
+tbody tr:last-child td:first-child {
+    border-bottom-left-radius: var(--radius-md);
+}
+
+tbody tr:last-child td:last-child {
+    border-bottom-right-radius: var(--radius-md);
 }
 
 /* 7. TOGGLE SWITCH ANIMADO */
@@ -535,6 +569,36 @@ input:checked + .slider:before {
     padding: 4px 0;
 }
 
+/* Ícones do Menu Superior - Herda a cor do texto do link */
+.sidebar-nav .sidebar-icon {
+    color: currentColor; /* Herda automaticamente a cor do link */
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+    margin-right: 10px;
+    opacity: 0.85; /* Dá um destaque leve ao texto */
+    transition: opacity var(--transition-fast);
+}
+
+/* Quando passa o mouse ou o link está ativo, o ícone ganha 100% de opacidade */
+.sidebar-nav a:hover .sidebar-icon,
+.sidebar-nav a.active .sidebar-icon {
+    opacity: 1;
+}
+
+/* Ícones do Dropdown de Perfil (Acompanham o tema) */
+.profile-menu .dropdown-icon {
+    color: currentColor;
+    font-size: 0.95rem;
+    width: 18px;
+    text-align: center;
+}
+
+/* Ícone de Sair com cor de contraste de alerta */
+.profile-menu .btn-logout .dropdown-icon {
+    color: var(--msg-error-text, #e74c3c);
+}
+
 .theme-switch-wrapper {
     display: flex;
     align-items: center;
@@ -650,6 +714,56 @@ input:checked + .slider:before {
 .profile-menu a:hover {
     background-color: var(--nav-bg-hover);
     text-decoration: none;
+}
+
+.input-group {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.input-group .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary, #718096);
+    font-size: 0.95rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding-left: 38px; /* Abre espaço interno para o ícone não sobrepor o texto */
+}
+
+button i {
+    margin-right: 6px;
+}
+
+.input-group .toggle-senha {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-secondary, #718096);
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-group .toggle-senha:focus {
+    outline: none;
+}
+
+/* Ajusta o padding do input para não sobrepor o texto ao botão da direita */
+.input-group input[type="password"],
+.input-group input[type="text"] {
+    padding-right: 38px;
 }
 
 /* 7. REGRAS RESPONSIVAS (MOBILE) */
