@@ -1,0 +1,105 @@
+-- Otimizações e configurações de ambiente
+SET FOREIGN_KEY_CHECKS = 0;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Criação do Banco de Dados
+--
+CREATE DATABASE IF NOT EXISTS `sistema_convites` 
+DEFAULT CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
+USE `sistema_convites`;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `configuracao_convite`
+--
+DROP TABLE IF EXISTS `configuracao_convite`;
+CREATE TABLE `configuracao_convite` (
+  `id` int(11) NOT NULL DEFAULT 1,
+  `titulo_evento` varchar(100) DEFAULT 'CONVITE ESPECIAL',
+  `data_evento` date DEFAULT NULL,
+  `hora_evento` time DEFAULT NULL,
+  `local_evento` varchar(255) DEFAULT NULL,
+  `cor_primaria` varchar(7) DEFAULT '#2563eb',
+  `cor_codigo` varchar(7) DEFAULT '#c80000',
+  `fonte_familia` varchar(20) DEFAULT 'Arial',
+  `estilo_borda` varchar(20) DEFAULT 'simples',
+  `imagem_fundo` varchar(100) DEFAULT 'padrao.png',
+  `mensagem_rodape` varchar(255) DEFAULT 'Apresente este documento acompanhado do seu BI/Passaporte na entrada.',
+  `atualizado_em` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `cor_fundo` varchar(7) DEFAULT '#ffffff',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dados da tabela `configuracao_convite`
+--
+INSERT INTO `configuracao_convite` (`id`, `titulo_evento`, `data_evento`, `hora_evento`, `local_evento`, `cor_primaria`, `cor_codigo`, `fonte_familia`, `estilo_borda`, `imagem_fundo`, `mensagem_rodape`, `atualizado_em`, `cor_fundo`) VALUES
+(1, 'CONVITE ESPECIAL', '0000-00-00', '00:00:00', '', '#2563eb', '#000000', 'CinzelDecorative', 'nenhuma', 'moldura_geometrica2.png', 'Apresente este convite na entrada.', '2026-09-01 07:27:41', '#ffffff');
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `usuario`
+--
+DROP TABLE IF EXISTS `usuario`;
+CREATE TABLE `usuario` (
+  `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `senha_hash` varchar(255) NOT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `primeira_senha` tinyint(1) DEFAULT 1,
+  `ativo` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id_usuario`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dados da tabela `usuario`
+--
+INSERT INTO `usuario` (`id_usuario`, `nome`, `email`, `senha_hash`, `criado_em`, `primeira_senha`, `ativo`) VALUES
+(1, 'Matias Matavel', 'matiasmatavel1232@gmail.com', '$2y$10$zZA2TzeJg0H92cABbRcRtOX/HHyR7xotoNo4SiGbKxOtySH/5SiGm', '2026-08-27 12:23:36', 0, 1),
+(2, 'António Maússe', 'antoniomausse@gmail.com', '$2y$10$Itm0Gw/BoxxA3hS0C3EPK.qCBNTgmNYxx6LFUrXu7UwILVVfNCwyy', '2026-09-01 07:32:27', 1, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `convidado` (Sem dados populados)
+--
+DROP TABLE IF EXISTS `convidado`;
+CREATE TABLE `convidado` (
+  `id_convidado` int(11) NOT NULL AUTO_INCREMENT,
+  `codigo_unico` varchar(20) NOT NULL,
+  `nome_completo` varchar(150) NOT NULL,
+  `documento_id` varchar(50) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `telefone` varchar(30) DEFAULT NULL,
+  `status` enum('PENDENTE','EMITIDO','CANCELADO') DEFAULT 'PENDENTE',
+  `data_hora_entrada` datetime DEFAULT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `criado_por` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_convidado`),
+  UNIQUE KEY `codigo_unico` (`codigo_unico`),
+  KEY `idx_busca_convidado` (`nome_completo`,`codigo_unico`),
+  KEY `fk_convidado_usuario` (`criado_por`),
+  CONSTRAINT `fk_convidado_usuario` FOREIGN KEY (`criado_por`) REFERENCES `usuario` (`id_usuario`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Restauração de verificações e confirmação de transação
+SET FOREIGN_KEY_CHECKS = 1;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
