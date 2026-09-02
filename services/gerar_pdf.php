@@ -30,6 +30,42 @@ function hex2rgb($hex) {
     ];
 }
 
+// Rotaciona um PNG preservando transparência e retorna o caminho de um arquivo temporário.
+// O FPDF puro não tem rotação nativa (é preciso o addon fpdf_rotation.php), então giramos
+// o próprio arquivo de imagem antes de entregá-lo ao FPDF.
+function rotacionarMoldura($caminhoOriginal, $angulo) {
+    if ($angulo == 0 || !extension_loaded('gd')) {
+        return null; // sem rotação: quem chamou usa a imagem original
+    }
+    $img = @imagecreatefrompng($caminhoOriginal);
+    if (!$img) return null;
+
+    imagealphablending($img, false);
+    imagesavealpha($img, true);
+    $transparente = imagecolorallocatealpha($img, 0, 0, 0, 127);
+    // imagerotate() gira em sentido anti-horário; invertendo o sinal para bater com o slider (sentido horário)
+    $rotada = imagerotate($img, -$angulo, $transparente);
+    imagealphablending($rotada, false);
+    imagesavealpha($rotada, true);
+
+    $tmp = sys_get_temp_dir() . '/moldura_' . uniqid() . '.png';
+    imagepng($rotada, $tmp);
+
+    // Guarda o tamanho REAL da tela após rotacionar (fica maior que o original,
+    // exceto em ângulos múltiplos de 90°) — é isso que faltava usar depois.
+    $largura_px = imagesx($rotada);
+    $altura_px  = imagesy($rotada);
+
+    imagedestroy($img);
+    imagedestroy($rotada);
+
+    return [
+        'caminho' => $tmp,
+        'largura_px' => $largura_px,
+        'altura_px'  => $altura_px
+    ];
+}
+
 $stmtCfg = $db->query("SELECT * FROM configuracao_convite WHERE id = 1");
 $cfg = $stmtCfg->fetch();
 
@@ -37,6 +73,12 @@ $cor_p = hex2rgb($cfg['cor_primaria'] ?? '#2563eb');
 $cor_c = hex2rgb($cfg['cor_codigo'] ?? '#000000');
 $cor_f = hex2rgb($cfg['cor_fundo'] ?? '#ffffff');
 $fonte = $cfg['fonte_familia'] ?? 'AlexBrush';
+
+$moldura_escala  = (int)($cfg['moldura_escala'] ?? 100);
+$moldura_pos_x   = (int)($cfg['moldura_pos_x'] ?? 0);
+$moldura_pos_y   = (int)($cfg['moldura_pos_y'] ?? 0);
+$moldura_rotacao = (int)($cfg['moldura_rotacao'] ?? 0);
+$cor_texto       = hex2rgb($cfg['cor_texto'] ?? '#555555');
 
 $pdf = new FPDF('P', 'mm', [148, 150]);
 
@@ -69,11 +111,48 @@ $pdf->AddPage();
 $pdf->SetFillColor($cor_f[0], $cor_f[1], $cor_f[2]);
 $pdf->Rect(0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight(), 'F');
 
-// Moldura
+// Moldura (respeitando escala, posição e rotação definidas no preview)
 if (!empty($cfg['imagem_fundo']) && $cfg['imagem_fundo'] !== 'nenhuma') {
     $caminho_moldura = '../img/molduras/' . $cfg['imagem_fundo'];
     if (file_exists($caminho_moldura)) {
-        $pdf->Image($caminho_moldura, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight());
+        // Tamanho original (antes de rotacionar), em pixels
+        list($orig_px_w, $orig_px_h) = getimagesize($caminho_moldura);
+
+        // Largura/altura-alvo em mm SEM rotação, conforme a escala (100% = tamanho da página)
+        $img_w = $pdf->GetPageWidth()  * ($moldura_escala / 100);
+        $img_h = $pdf->GetPageHeight() * ($moldura_escala / 100);
+
+        // Fator de conversão px -> mm baseado no tamanho original — usado também
+        // depois de rotacionar, pra não distorcer a imagem, só ampliar a "moldura" da tela
+        $escala_px_mm_x = $img_w / $orig_px_w;
+        $escala_px_mm_y = $img_h / $orig_px_h;
+
+        $caminho_final = $caminho_moldura;
+        $final_w = $img_w;
+        $final_h = $img_h;
+
+        $rot = rotacionarMoldura($caminho_moldura, $moldura_rotacao);
+        if ($rot !== null) {
+            $caminho_final = $rot['caminho'];
+            $final_w = $rot['largura_px'] * $escala_px_mm_x;
+            $final_h = $rot['altura_px']  * $escala_px_mm_y;
+        }
+
+        // O preview usa deslocamento em px sobre uma caixa de ~350px de largura;
+        // convertendo essa proporção para mm da página do PDF
+        $fator_px_para_mm = $pdf->GetPageWidth() / 350;
+        $offset_x = $moldura_pos_x * $fator_px_para_mm;
+        $offset_y = $moldura_pos_y * $fator_px_para_mm;
+
+        // Centraliza a moldura (já rotacionada, se houver) e aplica o deslocamento
+        $img_x = ($pdf->GetPageWidth()  - $final_w) / 2 + $offset_x;
+        $img_y = ($pdf->GetPageHeight() - $final_h) / 2 + $offset_y;
+
+        $pdf->Image($caminho_final, $img_x, $img_y, $final_w, $final_h);
+
+        if ($caminho_final !== $caminho_moldura) {
+            @unlink($caminho_final);
+        }
     }
 }
 
@@ -82,7 +161,7 @@ $pdf->SetY(18);
 // Subtítulo
 if (!empty($cfg['subtitulo_evento'])) {
     $pdf->SetFont('Arial', '', 7);
-    $pdf->SetTextColor(100, 100, 100);
+    $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
     $pdf->Cell(0, 4, utf8_decode(mb_strtoupper($cfg['subtitulo_evento'], 'UTF-8')), 0, 1, 'C');
     $pdf->Ln(1);
 }
@@ -105,11 +184,9 @@ $pdf->Rect(73.3, $y - 0.7, 1.4, 1.4, 'F'); // quadradinho central (bem pequeno, 
 
 $pdf->Ln(8);
 
-$pdf->Ln(8);
-
 // Convidado
 $pdf->SetFont('Arial', '', 8);
-$pdf->SetTextColor(120, 120, 120);
+$pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
 $pdf->Cell(0, 4, utf8_decode('Convidado(a) Especial:'), 0, 1, 'C');
 
 $pdf->SetFont('Arial', 'B', 12);
@@ -133,7 +210,7 @@ if ($data_str || !empty($cfg['local_evento']) || !empty($cfg['traje_evento'])) {
 
     $pdf->SetY($y_bloco + 2);
     $pdf->SetFont('Arial', '', 9);
-    $pdf->SetTextColor(50, 50, 50);
+    $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
 
     if ($data_str) {
         $pdf->Cell(0, 4, utf8_decode($data_str), 0, 1, 'C');
@@ -146,7 +223,7 @@ if ($data_str || !empty($cfg['local_evento']) || !empty($cfg['traje_evento'])) {
 
     if (!empty($cfg['traje_evento'])) {
         $pdf->SetFont('Arial', 'I', 8);
-        $pdf->SetTextColor(100, 100, 100);
+        $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
         $pdf->Cell(0, 4, utf8_decode('Traje: ' . $cfg['traje_evento']), 0, 1, 'C');
     }
     $pdf->Ln(6);
@@ -164,7 +241,7 @@ if (!empty($cfg['exibir_qrcode']) && $cfg['exibir_qrcode'] == 1) {
     $pdf->SetY($y_qr + 2);
     $pdf->SetX(60);
     $pdf->SetFont('Arial', '', 7);
-    $pdf->SetTextColor(100, 100, 100);
+    $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
     $pdf->Cell(50, 3, utf8_decode('Código de Acesso:'), 0, 1, 'L');
     
     $pdf->SetX(60);
@@ -174,7 +251,7 @@ if (!empty($cfg['exibir_qrcode']) && $cfg['exibir_qrcode'] == 1) {
     $pdf->Ln(7);
 } else {
     $pdf->SetFont('Arial', '', 7);
-    $pdf->SetTextColor(100, 100, 100);
+    $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
     $pdf->Cell(0, 3, utf8_decode('Código de Acesso:'), 0, 1, 'C');
     
     $pdf->SetFont('Arial', 'B', 11);
@@ -186,7 +263,7 @@ if (!empty($cfg['exibir_qrcode']) && $cfg['exibir_qrcode'] == 1) {
 // Rodapé
 if (!empty($cfg['mensagem_rodape'])) {
     $pdf->SetFont('Arial', 'I', 7);
-    $pdf->SetTextColor(100, 100, 100);
+    $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
     $pdf->Cell(0, 5, utf8_decode($cfg['mensagem_rodape']), 0, 1, 'C');
 }
 
