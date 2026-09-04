@@ -22,6 +22,26 @@ if (isset($_GET['toggle_id'])) {
     exit;
 }
 
+// Ação de Reset de Senha via GET
+if (isset($_GET['reset_id'])) {
+    $id_reset = (int)$_GET['reset_id'];
+
+    if ($id_reset !== $id_logado && $id_reset > 0) {
+        // Hash da senha "12345678"
+        $nova_senha_hash = password_hash('12345678', PASSWORD_DEFAULT);
+
+        // Atualiza a senha e força primeira_senha = 1 (true)
+        $stmt = $db->prepare("UPDATE usuario SET senha_hash = :senha_hash, primeira_senha = 1 WHERE id_usuario = :id");
+        $stmt->execute([
+            ':senha_hash' => $nova_senha_hash,
+            ':id'    => $id_reset
+        ]);
+    }
+
+    header("Location: usuarios_lista.php");
+    exit;
+}
+
 // Oculta o usuário atualmente logado da listagem
 $stmt = $db->prepare("SELECT id_usuario, nome, email, ativo, primeira_senha FROM usuario WHERE id_usuario != :id_logado ORDER BY nome ASC");
 $stmt->execute([':id_logado' => $id_logado]);
@@ -38,8 +58,7 @@ $usuarios = $stmt->fetchAll();
     <script src="../js/darkmode.js" defer></script>
     <script src="../js/sidebar.js" defer></script>
     <style>
-        /* CSS dos botões mantido com variáveis do sistema */
-        .btn-detalhes {
+        .btn-detalhes, .btn-reset {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -51,6 +70,8 @@ $usuarios = $stmt->fetchAll();
             transition: all var(--transition-fast, 0.2s);
             border: 1px solid transparent;
             cursor: pointer;
+        }
+        .btn-detalhes {
             background-color: rgba(37, 99, 235, 0.1);
             color: var(--primary, #2563eb);
             border-color: rgba(37, 99, 235, 0.2);
@@ -59,6 +80,18 @@ $usuarios = $stmt->fetchAll();
             text-decoration: none;
             transform: translateY(-1px);
             background-color: var(--primary, #2563eb);
+            color: #ffffff;
+        }
+        /* Estilo do Botão Reset */
+        .btn-reset {
+            background-color: rgba(234, 179, 8, 0.1);
+            color: #ca8a04;
+            border-color: rgba(234, 179, 8, 0.3);
+        }
+        .btn-reset:hover {
+            text-decoration: none;
+            transform: translateY(-1px);
+            background-color: #ca8a04;
             color: #ffffff;
         }
     </style>
@@ -81,7 +114,7 @@ $usuarios = $stmt->fetchAll();
                                 <th>Nome</th>
                                 <th>Email</th>
                                 <th>Status</th>
-                                <th>Ativar / Desativar</th>
+                                <th>Ações / Ativar</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -93,7 +126,18 @@ $usuarios = $stmt->fetchAll();
                                 <td><?= $u['ativo'] ? 'Ativo' : 'Inativo' ?></td>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <a href="usuario_detalhes.php?id=<?= $u['id_usuario'] ?>" class="btn-detalhes">Detalhes</a> 
+                                        <a href="usuario_detalhes.php?id=<?= $u['id_usuario'] ?>" class="btn-detalhes" title="Ver Detalhes">
+                                            <i class="fa-solid fa-eye" style="margin-right: 4px;"></i> Detalhes
+                                        </a> 
+                                        
+                                        <!-- Botão de Reset de Senha -->
+                                        <a href="?reset_id=<?= $u['id_usuario'] ?>" 
+                                           class="btn-reset" 
+                                           title="Resetar Senha para 12345678"
+                                           onclick="return confirm('Deseja realmente resetar a senha deste usuário para 12345678? O usuário precisará definir uma nova senha no próximo login.');">
+                                            <i class="fa-solid fa-key" style="margin-right: 4px;"></i> Resetar Senha
+                                        </a>
+
                                         <label class="switch">
                                             <input type="checkbox" <?= $u['ativo'] ? 'checked' : '' ?> onchange="location.href='?toggle_id=<?= $u['id_usuario'] ?>'">
                                             <span class="slider"></span>
