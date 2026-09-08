@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cor_codigo      = $_POST['cor_codigo'];
     $cor_fundo       = $_POST['cor_fundo'];
     $fonte           = $_POST['fonte_familia'];
+    $fonte_texto     = $_POST['fonte_texto'] ?? 'Montserrat';
     $borda           = 'nenhuma';
     $img_fundo       = $_POST['imagem_fundo'] ?? 'nenhuma';
     $rodape          = trim($_POST['mensagem_rodape']);
@@ -29,17 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $moldura_rotacao = (int)($_POST['moldura_rotacao'] ?? 0);
     $cor_texto       = $_POST['cor_texto'] ?? '#555555';
 
-    $stmt = $db->prepare("INSERT INTO configuracao_convite (
-            id, titulo_evento, subtitulo_evento, data_evento, hora_evento, local_evento, traje_evento,
-            cor_primaria, cor_codigo, cor_fundo, fonte_familia, estilo_borda, 
-            imagem_fundo, mensagem_rodape, exibir_qrcode, moldura_escala, moldura_pos_x, moldura_pos_y,
-            moldura_rotacao, cor_texto
-        ) VALUES (
-            1, :titulo, :subtitulo, :data_e, :hora_e, :local_e, :traje,
-            :cor_p, :cor_c, :cor_f, :fonte, :borda, 
-            :img_f, :rodape, :qr, :m_escala, :m_x, :m_y,
-            :m_rot, :cor_t
-        ) ON DUPLICATE KEY UPDATE 
+$stmt = $db->prepare("INSERT INTO configuracao_convite (
+        id, titulo_evento, subtitulo_evento, data_evento, hora_evento, local_evento, traje_evento,
+        cor_primaria, cor_codigo, cor_fundo, fonte_familia, fonte_texto, estilo_borda, 
+        imagem_fundo, mensagem_rodape, exibir_qrcode, moldura_escala, moldura_pos_x, moldura_pos_y,
+        moldura_rotacao, cor_texto
+    ) VALUES (
+        1, :titulo, :subtitulo, :data_e, :hora_e, :local_e, :traje,
+        :cor_p, :cor_c, :cor_f, :fonte, :fonte_texto, :borda, 
+        :img_f, :rodape, :qr, :m_escala, :m_x, :m_y,
+        :m_rot, :cor_t
+    ) ON DUPLICATE KEY UPDATE 
             titulo_evento    = VALUES(titulo_evento),
             subtitulo_evento = VALUES(subtitulo_evento),
             data_evento      = VALUES(data_evento),
@@ -50,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cor_codigo       = VALUES(cor_codigo),
             cor_fundo        = VALUES(cor_fundo),
             fonte_familia    = VALUES(fonte_familia),
+            fonte_texto      = VALUES(fonte_texto),
             estilo_borda     = VALUES(estilo_borda),
             imagem_fundo     = VALUES(imagem_fundo),
             mensagem_rodape  = VALUES(mensagem_rodape),
@@ -71,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ':cor_c'     => $cor_codigo,
         ':cor_f'     => $cor_fundo,
         ':fonte'     => $fonte,
+        ':fonte_texto' => $fonte_texto,
         ':borda'     => $borda,
         ':img_f'     => $img_fundo,
         ':rodape'    => $rodape,
@@ -100,6 +103,7 @@ $config = [
     'cor_codigo'       => $configData['cor_codigo']       ?? '#000000',
     'cor_fundo'        => $configData['cor_fundo']        ?? '#ffffff',
     'fonte_familia'    => $configData['fonte_familia']    ?? 'AlexBrush',
+    'fonte_texto'      => $configData['fonte_texto']       ?? 'Montserrat',
     'imagem_fundo'     => $configData['imagem_fundo']     ?? 'nenhuma',
     'mensagem_rodape'  => $configData['mensagem_rodape']  ?? 'Apresente este convite na entrada.',
     'exibir_qrcode'    => $configData['exibir_qrcode']    ?? 1,
@@ -136,7 +140,7 @@ $config = [
                 <div style="margin-top: 15px; padding: 15px; border-radius: 8px;">
                     <h4 style="margin-bottom: 10px;">Ajustes Rápidos:</h4>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button type="button" onclick="aplicarTemplate('Casamento', '#991b1b', '#854d0e', '#fefce8', 'AlexBrush', 'moldura_boho1.png')" style="background: #fefce8; color: #991b1b; border: 1px solid #fef08a; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Casamento Boho</button>
+<button type="button" onclick="aplicarTemplate('Casamento', '#991b1b', '#854d0e', '#fefce8', 'CinzelDecorative', 'Cinzel', 'moldura_geometrica2.png')" style="background: #fefce8; color: rgb(211, 175, 55); border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Casamento Boho</button>
                         <button type="button" onclick="aplicarTemplate('Corporativo', '#1e3a8a', '#1d4ed8', '#ffffff', 'Cinzel', 'nenhuma')" style="background: #ffffff; color: #1e3a8a; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Corporativo Luxo</button>
                         <button type="button" onclick="aplicarTemplate('Gala', '#4a154b', '#d97706', '#faf5ff', 'PinyonScript', 'nenhuma')" style="background: #faf5ff; color: #4a154b; border: 1px solid #e9d5ff; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Monarquia Clássica</button>
                     </div>
@@ -187,7 +191,7 @@ $config = [
                             <input type="color" name="cor_fundo" value="<?= $config['cor_fundo'] ?>">
 
 
-<label><b>Fonte do Convite:</b></label>
+<label><b>Fonte dos Títulos:</b></label>
 <select name="fonte_familia" style="padding: 10px; border-radius: 6px;">
     <optgroup label="Cursivas / Elegantes">
         <option value="AlexBrush" <?= $config['fonte_familia'] === 'AlexBrush' ? 'selected' : '' ?>>Alex Brush</option>
@@ -204,6 +208,26 @@ $config = [
         <option value="Montserrat" <?= $config['fonte_familia'] === 'Montserrat' ? 'selected' : '' ?>>Montserrat</option>
         <option value="Roboto" <?= $config['fonte_familia'] === 'Roboto' ? 'selected' : '' ?>>Roboto</option>
         <option value="Inter" <?= $config['fonte_familia'] === 'Inter' ? 'selected' : '' ?>>Inter</option>
+    </optgroup>
+</select>
+
+<label><b>Fonte do Texto de Apoio:</b></label>
+<select name="fonte_texto" style="padding: 10px; border-radius: 6px;">
+    <optgroup label="Cursivas / Elegantes">
+        <option value="AlexBrush" <?= $config['fonte_texto'] === 'AlexBrush' ? 'selected' : '' ?>>Alex Brush</option>
+        <option value="PinyonScript" <?= $config['fonte_texto'] === 'PinyonScript' ? 'selected' : '' ?>>Pinyon Script</option>
+    </optgroup>
+    <optgroup label="Serifadas / Clássicas">
+        <option value="Cinzel" <?= $config['fonte_texto'] === 'Cinzel' ? 'selected' : '' ?>>Cinzel</option>
+        <option value="CinzelDecorative" <?= $config['fonte_texto'] === 'CinzelDecorative' ? 'selected' : '' ?>>Cinzel Decorative</option>
+        <option value="CormorantGaramond" <?= $config['fonte_texto'] === 'CormorantGaramond' ? 'selected' : '' ?>>Cormorant Garamond</option>
+        <option value="PlayfairDisplay" <?= $config['fonte_texto'] === 'PlayfairDisplay' ? 'selected' : '' ?>>Playfair Display</option>
+        <option value="Merriweather" <?= $config['fonte_texto'] === 'Merriweather' ? 'selected' : '' ?>>Merriweather</option>
+    </optgroup>
+    <optgroup label="Modernas / Sans-serif">
+        <option value="Montserrat" <?= $config['fonte_texto'] === 'Montserrat' ? 'selected' : '' ?>>Montserrat</option>
+        <option value="Roboto" <?= $config['fonte_texto'] === 'Roboto' ? 'selected' : '' ?>>Roboto</option>
+        <option value="Inter" <?= $config['fonte_texto'] === 'Inter' ? 'selected' : '' ?>>Inter</option>
     </optgroup>
 </select>
 
@@ -324,6 +348,7 @@ $config = [
     const inputPosY      = document.querySelector('input[name="moldura_pos_y"]');
     const inputRotacao   = document.querySelector('input[name="moldura_rotacao"]');
     const inputCorTexto  = document.querySelector('input[name="cor_texto"]');
+    const selectFonteTexto = document.querySelector('select[name="fonte_texto"]');
 
     const prevTitulo         = document.getElementById('prev-titulo');
     const prevSubtitulo      = document.getElementById('prev-subtitulo');
@@ -341,10 +366,12 @@ $config = [
     const prevLabelConvidado = document.getElementById('prev-label-convidado');
     const prevInfoBox        = document.getElementById('prev-info-box');
     const prevLabelCodigo    = document.getElementById('prev-label-codigo');
+    
     const gizmo               = document.getElementById('moldura-gizmo');
     const gizmoMover           = document.getElementById('gizmo-mover');
     const gizmoRedimensionar   = document.getElementById('gizmo-redimensionar');
     const gizmoRotacionar      = document.getElementById('gizmo-rotacionar');
+
 
     function atualizarPreview() {
         prevTitulo.textContent    = inputTitulo.value || '';
@@ -385,11 +412,21 @@ $config = [
             'Inter': "'Inter', sans-serif"
         };
         
-        const fonteSelecionada = fontMap[selectFonte.value] || "'Alex Brush', cursive";
-        
-        // Aplica a fonte em todo o container do convite
-        prevBox.style.fontFamily = fonteSelecionada;
-        prevTitulo.style.fontFamily = fonteSelecionada;
+const fonteTitulo = fontMap[selectFonte.value] || "'Alex Brush', cursive";
+const fonteApoio  = fontMap[selectFonteTexto.value] || "'Montserrat', sans-serif";
+
+// Título usa a fonte de títulos
+prevTitulo.style.fontFamily = fonteTitulo;
+prevNome.style.fontFamily = fonteTitulo; // nome do convidado acompanha o título
+
+// Texto de apoio usa a fonte própria — aplica diretamente em CADA elemento,
+// não só no contentor pai, para garantir que vence qualquer regra do estilo.css
+[prevSubtitulo, prevLabelConvidado, prevInfoBox, prevData, prevHora, prevLocal,
+ prevTraje, prevLabelCodigo, prevRodape]
+    .forEach(el => { if (el) el.style.fontFamily = fonteApoio; });
+
+// Fallback para qualquer texto não coberto acima
+prevBox.style.fontFamily = fonteApoio;
 
 if (selectImg.value && selectImg.value !== 'nenhuma') {
     prevMoldura.style.backgroundImage = `url('../img/molduras/${selectImg.value}')`;
@@ -441,14 +478,15 @@ if (selectImg.value && selectImg.value !== 'nenhuma') {
         gizmo.style.transform = `rotate(${inputRotacao.value}deg)`;
     }
 
-    function aplicarTemplate(tipo, corPri, corCod, corFun, fonte, img) {
-        inputCorPri.value = corPri;
-        inputCorCod.value = corCod;
-        inputCorFun.value = corFun;
-        selectFonte.value = fonte;
-        if(selectImg) selectImg.value = img;
-        atualizarPreview();
-    }
+function aplicarTemplate(tipo, corPri, corCod, corFun, fonte, fonteTexto, img) {
+    inputCorPri.value = corPri;
+    inputCorCod.value = corCod;
+    inputCorFun.value = corFun;
+    selectFonte.value = fonte;
+    selectFonteTexto.value = fonteTexto;
+    if(selectImg) selectImg.value = img;
+    atualizarPreview();
+}
 
         // --- Mover, redimensionar e rodar a moldura arrastando o mouse ---
     let arrastando = null; // 'mover' | 'redimensionar' | 'rotacionar'
@@ -529,10 +567,10 @@ if (selectImg.value && selectImg.value !== 'nenhuma') {
 
     window.addEventListener('resize', sincronizarGizmo);
 
-    const inputs = [inputTitulo, inputSubtitulo, inputData, inputHora, inputLocal, inputTraje,
-     inputCorPri, inputCorCod, inputCorFun, selectFonte, selectImg, inputQR, inputRodape,
-      inputEscala, inputPosX, inputPosY, inputRotacao, inputCorTexto];
-
+const inputs = [inputTitulo, inputSubtitulo, inputData, inputHora, inputLocal, inputTraje,
+ inputCorPri, inputCorCod, inputCorFun, selectFonte, selectFonteTexto, selectImg, inputQR, inputRodape,
+  inputEscala, inputPosX, inputPosY, inputRotacao, inputCorTexto];
+    
     inputs.forEach(el => {
         if(el) {
             el.addEventListener('input', atualizarPreview);
