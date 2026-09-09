@@ -9,6 +9,7 @@ $db = (new Conexao())->getConexao();
 $msg = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $tipo_design     = $_POST['tipo_design'] ?? 'MOLDURA'; // Captura do campo enviada pelo formulário
     $titulo          = trim($_POST['titulo_evento']);
     $subtitulo       = trim($_POST['subtitulo_evento'] ?? '');
     $data_evento     = $_POST['data_evento'] ?? null;
@@ -22,6 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fonte_texto     = $_POST['fonte_texto'] ?? 'Montserrat';
     $borda           = 'nenhuma';
     $img_fundo       = $_POST['imagem_fundo'] ?? 'nenhuma';
+
+    // Lógica para upload de Layout Completo
+    if ($tipo_design === 'LAYOUT_COMPLETO' && isset($_FILES['upload_layout']) && $_FILES['upload_layout']['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($_FILES['upload_layout']['name'], PATHINFO_EXTENSION));
+        $ext_permitidas = ['png', 'jpg', 'jpeg'];
+        if (in_array($ext, $ext_permitidas)) {
+            $nome_arquivo = 'layout_custom_' . uniqid() . '.' . $ext;
+            $destino = '../img/molduras/' . $nome_arquivo;
+            if (move_uploaded_file($_FILES['upload_layout']['tmp_name'], $destino)) {
+                $img_fundo = $nome_arquivo;
+            }
+        }
+    }
+
     $rodape          = trim($_POST['mensagem_rodape']);
     $exibir_qrcode   = isset($_POST['exibir_qrcode']) ? 1 : 0;
     $moldura_escala  = (int)($_POST['moldura_escala'] ?? 100);
@@ -30,39 +45,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $moldura_rotacao = (int)($_POST['moldura_rotacao'] ?? 0);
     $cor_texto       = $_POST['cor_texto'] ?? '#555555';
 
-$stmt = $db->prepare("INSERT INTO configuracao_convite (
-        id, titulo_evento, subtitulo_evento, data_evento, hora_evento, local_evento, traje_evento,
-        cor_primaria, cor_codigo, cor_fundo, fonte_familia, fonte_texto, estilo_borda, 
-        imagem_fundo, mensagem_rodape, exibir_qrcode, moldura_escala, moldura_pos_x, moldura_pos_y,
-        moldura_rotacao, cor_texto
-    ) VALUES (
-        1, :titulo, :subtitulo, :data_e, :hora_e, :local_e, :traje,
-        :cor_p, :cor_c, :cor_f, :fonte, :fonte_texto, :borda, 
-        :img_f, :rodape, :qr, :m_escala, :m_x, :m_y,
-        :m_rot, :cor_t
-    ) ON DUPLICATE KEY UPDATE 
-            titulo_evento    = VALUES(titulo_evento),
-            subtitulo_evento = VALUES(subtitulo_evento),
-            data_evento      = VALUES(data_evento),
-            hora_evento      = VALUES(hora_evento),
-            local_evento     = VALUES(local_evento),
-            traje_evento     = VALUES(traje_evento),
-            cor_primaria     = VALUES(cor_primaria),
-            cor_codigo       = VALUES(cor_codigo),
-            cor_fundo        = VALUES(cor_fundo),
-            fonte_familia    = VALUES(fonte_familia),
-            fonte_texto      = VALUES(fonte_texto),
-            estilo_borda     = VALUES(estilo_borda),
-            imagem_fundo     = VALUES(imagem_fundo),
-            mensagem_rodape  = VALUES(mensagem_rodape),
-            exibir_qrcode    = VALUES(exibir_qrcode),
-            moldura_escala   = VALUES(moldura_escala),
-            moldura_pos_x    = VALUES(moldura_pos_x),
-            moldura_pos_y    = VALUES(moldura_pos_y),
-            moldura_rotacao  = VALUES(moldura_rotacao),
-            cor_texto        = VALUES(cor_texto)");
+    $stmt = $db->prepare("INSERT INTO configuracao_convite (
+            id, tipo_design, titulo_evento, subtitulo_evento, data_evento, hora_evento, local_evento, traje_evento,
+            cor_primaria, cor_codigo, cor_fundo, fonte_familia, fonte_texto, estilo_borda, 
+            imagem_fundo, mensagem_rodape, exibir_qrcode, moldura_escala, moldura_pos_x, moldura_pos_y,
+            moldura_rotacao, cor_texto
+        ) VALUES (
+            1, :tipo_d, :titulo, :subtitulo, :data_e, :hora_e, :local_e, :traje,
+            :cor_p, :cor_c, :cor_f, :fonte, :fonte_texto, :borda, 
+            :img_f, :rodape, :qr, :m_escala, :m_x, :m_y,
+            :m_rot, :cor_t
+        ) ON DUPLICATE KEY UPDATE 
+                tipo_design      = VALUES(tipo_design),
+                titulo_evento    = VALUES(titulo_evento),
+                subtitulo_evento = VALUES(subtitulo_evento),
+                data_evento      = VALUES(data_evento),
+                hora_evento      = VALUES(hora_evento),
+                local_evento     = VALUES(local_evento),
+                traje_evento     = VALUES(traje_evento),
+                cor_primaria     = VALUES(cor_primaria),
+                cor_codigo       = VALUES(cor_codigo),
+                cor_fundo        = VALUES(cor_fundo),
+                fonte_familia    = VALUES(fonte_familia),
+                fonte_texto      = VALUES(fonte_texto),
+                estilo_borda     = VALUES(estilo_borda),
+                imagem_fundo     = VALUES(imagem_fundo),
+                mensagem_rodape  = VALUES(mensagem_rodape),
+                exibir_qrcode    = VALUES(exibir_qrcode),
+                moldura_escala   = VALUES(moldura_escala),
+                moldura_pos_x    = VALUES(moldura_pos_x),
+                moldura_pos_y    = VALUES(moldura_pos_y),
+                moldura_rotacao  = VALUES(moldura_rotacao),
+                cor_texto        = VALUES(cor_texto)");
 
     $stmt->execute([
+        ':tipo_d'    => $tipo_design,
         ':titulo'    => $titulo,
         ':subtitulo' => $subtitulo,
         ':data_e'    => $data_evento,
@@ -93,6 +110,7 @@ $stmt = $db->query("SELECT * FROM configuracao_convite WHERE id = 1");
 $configData = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $config = [
+    'tipo_design'      => $configData['tipo_design']      ?? 'MOLDURA',    
     'titulo_evento'    => $configData['titulo_evento']    ?? 'CONVITE ESPECIAL',
     'subtitulo_evento' => $configData['subtitulo_evento'] ?? 'Convidamos você para celebrar conosco',
     'data_evento'      => $configData['data_evento']      ?? '',
@@ -103,7 +121,7 @@ $config = [
     'cor_codigo'       => $configData['cor_codigo']       ?? '#000000',
     'cor_fundo'        => $configData['cor_fundo']        ?? '#ffffff',
     'fonte_familia'    => $configData['fonte_familia']    ?? 'AlexBrush',
-    'fonte_texto'      => $configData['fonte_texto']       ?? 'Montserrat',
+    'fonte_texto'      => $configData['fonte_texto']      ?? 'Montserrat',
     'imagem_fundo'     => $configData['imagem_fundo']     ?? 'nenhuma',
     'mensagem_rodape'  => $configData['mensagem_rodape']  ?? 'Apresente este convite na entrada.',
     'exibir_qrcode'    => $configData['exibir_qrcode']    ?? 1,
@@ -148,7 +166,7 @@ $config = [
 
                 <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
                     <div style="flex: 1; min-width: 320px;">
-                        <form method="POST" style="max-width: 100%;">
+<form method="POST" enctype="multipart/form-data" style="max-width: 100%;">
                             <label><b>Título do Evento:</b></label>
                             <input type="text" name="titulo_evento" value="<?= htmlspecialchars($config['titulo_evento']) ?>" required>
 
@@ -231,13 +249,29 @@ $config = [
     </optgroup>
 </select>
 
-<label><b>Moldura / Fundo Gráfico:</b></label>
-<select name="imagem_fundo" style="padding: 10px; border-radius: 6px;">
-    <option value="nenhuma" <?= $config['imagem_fundo'] === 'nenhuma' ? 'selected' : '' ?>>Sem Moldura</option>
-    <option value="moldura_boho1.png" <?= $config['imagem_fundo'] === 'moldura_boho1.png' ? 'selected' : '' ?>>Boho Floral</option>
-    <option value="moldura_geometrica1.png" <?= $config['imagem_fundo'] === 'moldura_geometrica1.png' ? 'selected' : '' ?>>Geométrico Ouro 1</option>
-    <option value="moldura_geometrica2.png" <?= $config['imagem_fundo'] === 'moldura_geometrica2.png' ? 'selected' : '' ?>>Geométrico Ouro 2</option>
+<!-- Seletor do Modo de Design -->
+<label><b>Modo de Design:</b></label>
+<select name="tipo_design" id="tipo_design" onchange="atualizarPreview()" style="padding: 10px; border-radius: 6px;">
+    <option value="MOLDURA" <?= $config['tipo_design'] === 'MOLDURA' ? 'selected' : '' ?>>Usar Moldura (Gera textos no sistema)</option>
+    <option value="LAYOUT_COMPLETO" <?= $config['tipo_design'] === 'LAYOUT_COMPLETO' ? 'selected' : '' ?>>Upload de Layout Completo (Apenas sobrepõe o convidado e QR)</option>
 </select>
+
+<!-- Bloco de Upload para Layout Completo -->
+<div id="bloco-upload-layout" style="margin-top: 10px; display: <?= $config['tipo_design'] === 'LAYOUT_COMPLETO' ? 'block' : 'none' ?>;">
+    <label><b>Enviar Arte/Layout Completo (PNG/JPG):</b></label>
+    <input type="file" name="upload_layout" accept="image/*" onchange="previewUploadArquivo(this)">
+</div>
+
+<!-- Bloco de Seleção de Moldura (Exibido apenas no modo MOLDURA) -->
+<div id="bloco-selecao-moldura" style="display: <?= $config['tipo_design'] === 'MOLDURA' ? 'block' : 'none' ?>;">
+    <label><b>Moldura / Fundo Gráfico:</b></label>
+    <select name="imagem_fundo" style="padding: 10px; border-radius: 6px;">
+        <option value="nenhuma" <?= $config['imagem_fundo'] === 'nenhuma' ? 'selected' : '' ?>>Sem Moldura</option>
+        <option value="moldura_boho1.png" <?= $config['imagem_fundo'] === 'moldura_boho1.png' ? 'selected' : '' ?>>Boho Floral</option>
+        <option value="moldura_geometrica1.png" <?= $config['imagem_fundo'] === 'moldura_geometrica1.png' ? 'selected' : '' ?>>Geométrico Ouro 1</option>
+        <option value="moldura_geometrica2.png" <?= $config['imagem_fundo'] === 'moldura_geometrica2.png' ? 'selected' : '' ?>>Geométrico Ouro 2</option>
+    </select>
+</div>
 
 <!-- ENVOLVA ESTA PARTE NA DIV -->
 <div id="controles-moldura" style="margin-top: 15px;">
@@ -329,6 +363,7 @@ $config = [
 
 <!-- Passo 4: Script JavaScript de Sincronização -->
 <script>
+    // --- Seletores de Controles e Formulário ---
     const controlesMoldura = document.getElementById('controles-moldura');
     const inputTitulo    = document.querySelector('input[name="titulo_evento"]');
     const inputSubtitulo = document.querySelector('input[name="subtitulo_evento"]');
@@ -350,6 +385,13 @@ $config = [
     const inputCorTexto  = document.querySelector('input[name="cor_texto"]');
     const selectFonteTexto = document.querySelector('select[name="fonte_texto"]');
 
+    // --- Controle de Modo de Design e Upload ---
+    const selectTipoDesign = document.getElementById('tipo_design') || document.querySelector('select[name="tipo_design"]');
+    const inputUploadLayout = document.querySelector('input[name="upload_layout"]');
+    const blocoUploadLayout = document.getElementById('bloco-upload-layout');
+    const blocoSelecaoMoldura = document.getElementById('bloco-selecao-moldura');
+
+    // --- Elementos de Preview ---
     const prevTitulo         = document.getElementById('prev-titulo');
     const prevSubtitulo      = document.getElementById('prev-subtitulo');
     const prevData           = document.getElementById('prev-data');
@@ -367,38 +409,63 @@ $config = [
     const prevInfoBox        = document.getElementById('prev-info-box');
     const prevLabelCodigo    = document.getElementById('prev-label-codigo');
     
+    // --- Controles de Manipulação Visual (Gizmo) ---
     const gizmo               = document.getElementById('moldura-gizmo');
-    const gizmoMover           = document.getElementById('gizmo-mover');
-    const gizmoRedimensionar   = document.getElementById('gizmo-redimensionar');
-    const gizmoRotacionar      = document.getElementById('gizmo-rotacionar');
+    const gizmoMover          = document.getElementById('gizmo-mover');
+    const gizmoRedimensionar  = document.getElementById('gizmo-redimensionar');
+    const gizmoRotacionar     = document.getElementById('gizmo-rotacionar');
 
+let layoutCustomDataUrl = <?php echo ($config['tipo_design'] === 'LAYOUT_COMPLETO' && !empty($config['imagem_fundo']) && $config['imagem_fundo'] !== 'nenhuma') ? json_encode('../img/molduras/' . $config['imagem_fundo']) : 'null'; ?>;
+
+    // Função para pré-visualizar imagem selecionada localmente no Upload
+    function previewUploadArquivo(input) {
+        const file = input ? (input.files ? input.files[0] : null) : null;
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                layoutCustomDataUrl = e.target.result;
+                atualizarPreview();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
     function atualizarPreview() {
-        prevTitulo.textContent    = inputTitulo.value || '';
-        prevSubtitulo.textContent = inputSubtitulo.value || '';
-        prevTitulo.style.color    = inputCorPri.value;
-        prevNome.style.color      = inputCorPri.value;
-        prevDivisor.style.color   = inputCorPri.value;
-        prevCodigo.style.color    = inputCorCod.value;
-        prevBox.style.backgroundColor = inputCorFun.value;
+        const modo = selectTipoDesign ? selectTipoDesign.value : 'MOLDURA';
 
-        if (inputData.value) {
+        // Alterna visibilidade dos blocos de controle no formulário
+        if (blocoUploadLayout) blocoUploadLayout.style.display = (modo === 'LAYOUT_COMPLETO') ? 'block' : 'none';
+        if (blocoSelecaoMoldura) blocoSelecaoMoldura.style.display = (modo === 'MOLDURA') ? 'block' : 'none';
+
+        // Atualização de Textos Base
+        if (prevTitulo) prevTitulo.textContent = inputTitulo ? inputTitulo.value : '';
+        if (prevSubtitulo) prevSubtitulo.textContent = inputSubtitulo ? inputSubtitulo.value : '';
+        if (prevTitulo && inputCorPri) prevTitulo.style.color = inputCorPri.value;
+        if (prevNome && inputCorPri) prevNome.style.color = inputCorPri.value;
+        if (prevDivisor && inputCorPri) prevDivisor.style.color = inputCorPri.value;
+        if (prevCodigo && inputCorCod) prevCodigo.style.color = inputCorCod.value;
+        if (prevBox && inputCorFun) prevBox.style.backgroundColor = inputCorFun.value;
+
+        // Formatação da Data do Evento
+        if (inputData && inputData.value) {
             const partes = inputData.value.split('-');
-            prevData.textContent = `${partes[2]}/${partes[1]}/${partes[0].slice(-2)}`;
-        } else {
+            if (prevData) prevData.textContent = `${partes[2]}/${partes[1]}/${partes[0].slice(-2)}`;
+        } else if (prevData) {
             prevData.textContent = 'DATA DO EVENTO';
         }
 
-        if (inputHora.value) {
+        // Formatação da Hora do Evento
+        if (inputHora && inputHora.value) {
             const horaApenas = inputHora.value.split(':')[0];
-            prevHora.textContent = ' - ' + parseInt(horaApenas, 10) + 'hrs';
-        } else {
+            if (prevHora) prevHora.textContent = ' - ' + parseInt(horaApenas, 10) + 'hrs';
+        } else if (prevHora) {
             prevHora.textContent = '';
         }
 
-        prevLocal.textContent = inputLocal.value ? 'Local: ' + inputLocal.value : '';
-        prevTraje.textContent = inputTraje.value ? 'Traje: ' + inputTraje.value : '';
+        if (prevLocal) prevLocal.textContent = (inputLocal && inputLocal.value) ? 'Local: ' + inputLocal.value : '';
+        if (prevTraje) prevTraje.textContent = (inputTraje && inputTraje.value) ? 'Traje: ' + inputTraje.value : '';
 
+        // Mapeamento de Fontes Tipográficas
         const fontMap = { 
             'AlexBrush': "'Alex Brush', cursive",
             'PinyonScript': "'Pinyon Script', cursive",
@@ -412,57 +479,104 @@ $config = [
             'Inter': "'Inter', sans-serif"
         };
         
-const fonteTitulo = fontMap[selectFonte.value] || "'Alex Brush', cursive";
-const fonteApoio  = fontMap[selectFonteTexto.value] || "'Montserrat', sans-serif";
+        const fonteTitulo = (selectFonte && fontMap[selectFonte.value]) ? fontMap[selectFonte.value] : "'Alex Brush', cursive";
+        const fonteApoio  = (selectFonteTexto && fontMap[selectFonteTexto.value]) ? fontMap[selectFonteTexto.value] : "'Montserrat', sans-serif";
 
-// Título usa a fonte de títulos
-prevTitulo.style.fontFamily = fonteTitulo;
-prevNome.style.fontFamily = fonteTitulo; // nome do convidado acompanha o título
+        if (prevTitulo) prevTitulo.style.fontFamily = fonteTitulo;
+        if (prevNome) prevNome.style.fontFamily = fonteTitulo;
 
-// Texto de apoio usa a fonte própria — aplica diretamente em CADA elemento,
-// não só no contentor pai, para garantir que vence qualquer regra do estilo.css
-[prevSubtitulo, prevLabelConvidado, prevInfoBox, prevData, prevHora, prevLocal,
- prevTraje, prevLabelCodigo, prevRodape]
-    .forEach(el => { if (el) el.style.fontFamily = fonteApoio; });
+        [prevSubtitulo, prevLabelConvidado, prevInfoBox, prevData, prevHora, prevLocal, prevTraje, prevLabelCodigo, prevRodape]
+            .forEach(el => { if (el) el.style.fontFamily = fonteApoio; });
 
-// Fallback para qualquer texto não coberto acima
-prevBox.style.fontFamily = fonteApoio;
+        if (prevBox) prevBox.style.fontFamily = fonteApoio;
 
-if (selectImg.value && selectImg.value !== 'nenhuma') {
-    prevMoldura.style.backgroundImage = `url('../img/molduras/${selectImg.value}')`;
-    prevMoldura.style.backgroundSize = `${inputEscala.value}% ${inputEscala.value}%`;
-    prevMoldura.style.backgroundPosition = `calc(50% + ${inputPosX.value}px) calc(50% + ${inputPosY.value}px)`;
-    prevMoldura.style.backgroundRepeat = 'no-repeat';
-    prevMoldura.style.transform = `rotate(${inputRotacao.value}deg)`;
-    
-    gizmo.style.display = 'block';
-    controlesMoldura.style.display = 'block'; // Mostra os sliders
-} else {
-    prevMoldura.style.backgroundImage = 'none';
-    
-    gizmo.style.display = 'none';
-    controlesMoldura.style.display = 'none'; // Esconde os sliders
-}
+// Regras específicas de exibição por Modo de Design
+        if (modo === 'LAYOUT_COMPLETO') {
+            // Oculta os dados gerais do evento pois já fazem parte da arte do fundo
+            [prevSubtitulo, prevTitulo, prevDivisor, prevInfoBox, prevRodape].forEach(el => {
+                if (el) el.style.display = 'none';
+            });
 
-        sincronizarGizmo();
+            const temImagem = layoutCustomDataUrl || (selectImg && selectImg.value && selectImg.value !== 'nenhuma');
 
-        // Cor do texto do corpo (título, nome do convidado e código de acesso já têm cor própria)
-        const corTextoAtual = inputCorTexto.value;
-        prevSubtitulo.style.color = corTextoAtual;
-        prevLabelConvidado.style.color = corTextoAtual;
-        prevInfoBox.style.color = corTextoAtual;
-        prevLabelCodigo.style.color = corTextoAtual;
-        prevRodape.style.color = corTextoAtual;
+            if (prevMoldura) {
+                if (layoutCustomDataUrl) {
+                    prevMoldura.style.backgroundImage = `url('${layoutCustomDataUrl}')`;
+                } else if (selectImg && selectImg.value && selectImg.value !== 'nenhuma') {
+                    prevMoldura.style.backgroundImage = `url('../img/molduras/${selectImg.value}')`;
+                } else {
+                    prevMoldura.style.backgroundImage = 'none';
+                }
 
-        document.getElementById('valor-escala').textContent = inputEscala.value + '%';
-        document.getElementById('valor-pos-x').textContent = inputPosX.value + 'px';
-        document.getElementById('valor-pos-y').textContent = inputPosY.value + 'px';
-        document.getElementById('valor-rotacao').textContent = inputRotacao.value + '°';
-        prevQRImg.style.display = inputQR.checked ? 'block' : 'none';
-        prevRodape.textContent = inputRodape.value;
+                if (temImagem) {
+                    // Aplica as propriedades de escala, posição e rotação na foto de upload
+                    prevMoldura.style.backgroundSize = `${inputEscala.value}% ${inputEscala.value}%`;
+                    prevMoldura.style.backgroundPosition = `calc(50% + ${inputPosX.value}px) calc(50% + ${inputPosY.value}px)`;
+                    prevMoldura.style.backgroundRepeat = 'no-repeat';
+                    prevMoldura.style.transform = `rotate(${inputRotacao.value}deg)`;
+                }
+            }
+
+            // Exibe os controles e o gizmo interativo caso haja uma imagem carregada
+            if (temImagem) {
+                if (gizmo) gizmo.style.display = 'block';
+                if (controlesMoldura) controlesMoldura.style.display = 'block';
+                sincronizarGizmo();
+            } else {
+                if (gizmo) gizmo.style.display = 'none';
+                if (controlesMoldura) controlesMoldura.style.display = 'none';
+            }
+
+        } else {
+            // Modo MOLDURA: Exibe todas as seções de texto do evento
+            [prevSubtitulo, prevTitulo, prevDivisor, prevInfoBox, prevRodape].forEach(el => {
+                if (el) el.style.display = 'block';
+            });
+
+            if (selectImg && selectImg.value && selectImg.value !== 'nenhuma') {
+                if (prevMoldura) {
+                    prevMoldura.style.backgroundImage = `url('../img/molduras/${selectImg.value}')`;
+                    prevMoldura.style.backgroundSize = `${inputEscala.value}% ${inputEscala.value}%`;
+                    prevMoldura.style.backgroundPosition = `calc(50% + ${inputPosX.value}px) calc(50% + ${inputPosY.value}px)`;
+                    prevMoldura.style.backgroundRepeat = 'no-repeat';
+                    prevMoldura.style.transform = `rotate(${inputRotacao.value}deg)`;
+                }
+                if (gizmo) gizmo.style.display = 'block';
+                if (controlesMoldura) controlesMoldura.style.display = 'block';
+            } else {
+                if (prevMoldura) prevMoldura.style.backgroundImage = 'none';
+                if (gizmo) gizmo.style.display = 'none';
+                if (controlesMoldura) controlesMoldura.style.display = 'none';
+            }
+
+            sincronizarGizmo();
+        }
+
+        // Aplicação de Cores aos Textos de Apoio
+        if (inputCorTexto) {
+            const corTextoAtual = inputCorTexto.value;
+            [prevSubtitulo, prevLabelConvidado, prevInfoBox, prevLabelCodigo, prevRodape].forEach(el => {
+                if (el) el.style.color = corTextoAtual;
+            });
+        }
+
+        // Atualização dos Rótulos dos Sliders
+        const elEscala  = document.getElementById('valor-escala');
+        const elPosX    = document.getElementById('valor-pos-x');
+        const elPosY    = document.getElementById('valor-pos-y');
+        const elRotacao = document.getElementById('valor-rotacao');
+
+        if (elEscala && inputEscala)   elEscala.textContent  = inputEscala.value + '%';
+        if (elPosX && inputPosX)     elPosX.textContent    = inputPosX.value + 'px';
+        if (elPosY && inputPosY)     elPosY.textContent    = inputPosY.value + 'px';
+        if (elRotacao && inputRotacao) elRotacao.textContent = inputRotacao.value + '°';
+
+        if (prevQRImg && inputQR)      prevQRImg.style.display = inputQR.checked ? 'block' : 'none';
+        if (prevRodape && inputRodape) prevRodape.textContent = inputRodape.value;
     }
 
     function sincronizarGizmo() {
+        if (!prevBox || !inputEscala || !inputPosX || !inputPosY || !inputRotacao || !gizmo) return;
         const boxW = prevBox.clientWidth;
         const boxH = prevBox.clientHeight;
         const escala = parseFloat(inputEscala.value) / 100;
@@ -478,71 +592,78 @@ if (selectImg.value && selectImg.value !== 'nenhuma') {
         gizmo.style.transform = `rotate(${inputRotacao.value}deg)`;
     }
 
-function aplicarTemplate(tipo, corPri, corCod, corFun, fonte, fonteTexto, img) {
-    inputCorPri.value = corPri;
-    inputCorCod.value = corCod;
-    inputCorFun.value = corFun;
-    selectFonte.value = fonte;
-    selectFonteTexto.value = fonteTexto;
-    if(selectImg) selectImg.value = img;
-    atualizarPreview();
-}
+    function aplicarTemplate(tipo, corPri, corCod, corFun, fonte, fonteTexto, img) {
+        if (inputCorPri) inputCorPri.value = corPri;
+        if (inputCorCod) inputCorCod.value = corCod;
+        if (inputCorFun) inputCorFun.value = corFun;
+        if (selectFonte) selectFonte.value = fonte;
+        if (selectFonteTexto) selectFonteTexto.value = fonteTexto;
+        if (selectImg) selectImg.value = img;
+        atualizarPreview();
+    }
 
-        // --- Mover, redimensionar e rodar a moldura arrastando o mouse ---
+    // --- Mover, Redimensionar e Rodar a Moldura Arrastando o Mouse ---
     let arrastando = null; // 'mover' | 'redimensionar' | 'rotacionar'
     let inicio = {};
 
     function centroPreviewBox() {
+        if (!prevBox) return { x: 0, y: 0 };
         const rect = prevBox.getBoundingClientRect();
         return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     }
 
-    gizmoMover.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        arrastando = 'mover';
-        inicio = {
-            mouseX: e.clientX,
-            mouseY: e.clientY,
-            posX: parseFloat(inputPosX.value),
-            posY: parseFloat(inputPosY.value)
-        };
-    });
+    if (gizmoMover) {
+        gizmoMover.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            arrastando = 'mover';
+            inicio = {
+                mouseX: e.clientX,
+                mouseY: e.clientY,
+                posX: parseFloat(inputPosX.value),
+                posY: parseFloat(inputPosY.value)
+            };
+        });
+    }
 
-    gizmoRedimensionar.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        arrastando = 'redimensionar';
-        const centro = centroPreviewBox();
-        const dx = e.clientX - centro.x;
-        const dy = e.clientY - centro.y;
-        inicio = {
-            distancia: Math.sqrt(dx * dx + dy * dy) || 1,
-            escala: parseFloat(inputEscala.value)
-        };
-    });
+    if (gizmoRedimensionar) {
+        gizmoRedimensionar.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            arrastando = 'redimensionar';
+            const centro = centroPreviewBox();
+            const dx = e.clientX - centro.x;
+            const dy = e.clientY - centro.y;
+            inicio = {
+                distancia: Math.sqrt(dx * dx + dy * dy) || 1,
+                escala: parseFloat(inputEscala.value)
+            };
+        });
+    }
 
-    gizmoRotacionar.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        arrastando = 'rotacionar';
-        const centro = centroPreviewBox();
-        inicio = {
-            angulo: Math.atan2(e.clientY - centro.y, e.clientX - centro.x) * (180 / Math.PI),
-            rotacao: parseFloat(inputRotacao.value)
-        };
-    });
+    if (gizmoRotacionar) {
+        gizmoRotacionar.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            arrastando = 'rotacionar';
+            const centro = centroPreviewBox();
+            inicio = {
+                angulo: Math.atan2(e.clientY - centro.y, e.clientX - centro.x) * (180 / Math.PI),
+                rotacao: parseFloat(inputRotacao.value)
+            };
+        });
+    }
 
     document.addEventListener('mousemove', (e) => {
         if (!arrastando) return;
 
-        if (arrastando === 'mover') {
+        if (arrastando === 'mover' && inputPosX && inputPosY) {
             const deltaX = e.clientX - inicio.mouseX;
             const deltaY = e.clientY - inicio.mouseY;
             inputPosX.value = Math.max(-150, Math.min(150, Math.round(inicio.posX + deltaX)));
             inputPosY.value = Math.max(-150, Math.min(150, Math.round(inicio.posY + deltaY)));
         }
 
-        if (arrastando === 'redimensionar') {
+        if (arrastando === 'redimensionar' && inputEscala) {
             const centro = centroPreviewBox();
             const dx = e.clientX - centro.x;
             const dy = e.clientY - centro.y;
@@ -551,7 +672,7 @@ function aplicarTemplate(tipo, corPri, corCod, corFun, fonte, fonteTexto, img) {
             inputEscala.value = Math.max(50, Math.min(200, novaEscala));
         }
 
-        if (arrastando === 'rotacionar') {
+        if (arrastando === 'rotacionar' && inputRotacao) {
             const centro = centroPreviewBox();
             const anguloAtual = Math.atan2(e.clientY - centro.y, e.clientX - centro.x) * (180 / Math.PI);
             const novaRotacao = Math.round(inicio.rotacao + (anguloAtual - inicio.angulo));
@@ -565,19 +686,32 @@ function aplicarTemplate(tipo, corPri, corCod, corFun, fonte, fonteTexto, img) {
         arrastando = null;
     });
 
-    window.addEventListener('resize', sincronizarGizmo);
+window.addEventListener('resize', () => {
+    sincronizarGizmo();
+});
 
-const inputs = [inputTitulo, inputSubtitulo, inputData, inputHora, inputLocal, inputTraje,
- inputCorPri, inputCorCod, inputCorFun, selectFonte, selectFonteTexto, selectImg, inputQR, inputRodape,
-  inputEscala, inputPosX, inputPosY, inputRotacao, inputCorTexto];
-    
+    // Registra os Listeners de Input e Change
+    const inputs = [
+        inputTitulo, inputSubtitulo, inputData, inputHora, inputLocal, inputTraje,
+        inputCorPri, inputCorCod, inputCorFun, selectFonte, selectFonteTexto, selectImg,
+        inputQR, inputRodape, inputEscala, inputPosX, inputPosY, inputRotacao, inputCorTexto,
+        selectTipoDesign, inputUploadLayout
+    ];
+        
     inputs.forEach(el => {
-        if(el) {
+        if (el) {
             el.addEventListener('input', atualizarPreview);
-            el.addEventListener('change', atualizarPreview);
+            el.addEventListener('change', (e) => {
+                if (el === inputUploadLayout) {
+                    previewUploadArquivo(el);
+                } else {
+                    atualizarPreview();
+                }
+            });
         }
     });
 
+    // Execução Inicial
     atualizarPreview();
 </script>
 </body>

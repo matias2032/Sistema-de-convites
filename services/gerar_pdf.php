@@ -30,12 +30,10 @@ function hex2rgb($hex) {
     ];
 }
 
-// Rotaciona um PNG preservando transparência e retorna o caminho de um arquivo temporário.
-// O FPDF puro não tem rotação nativa (é preciso o addon fpdf_rotation.php), então giramos
-// o próprio arquivo de imagem antes de entregá-lo ao FPDF.
+// Rotaciona um PNG preservando transparência e retorna o caminho do arquivo temporário
 function rotacionarMoldura($caminhoOriginal, $angulo) {
     if ($angulo == 0 || !extension_loaded('gd')) {
-        return null; // sem rotação: quem chamou usa a imagem original
+        return null;
     }
     $img = @imagecreatefrompng($caminhoOriginal);
     if (!$img) return null;
@@ -43,7 +41,6 @@ function rotacionarMoldura($caminhoOriginal, $angulo) {
     imagealphablending($img, false);
     imagesavealpha($img, true);
     $transparente = imagecolorallocatealpha($img, 0, 0, 0, 127);
-    // imagerotate() gira em sentido anti-horário; invertendo o sinal para bater com o slider (sentido horário)
     $rotada = imagerotate($img, -$angulo, $transparente);
     imagealphablending($rotada, false);
     imagesavealpha($rotada, true);
@@ -51,8 +48,6 @@ function rotacionarMoldura($caminhoOriginal, $angulo) {
     $tmp = sys_get_temp_dir() . '/moldura_' . uniqid() . '.png';
     imagepng($rotada, $tmp);
 
-    // Guarda o tamanho REAL da tela após rotacionar (fica maior que o original,
-    // exceto em ângulos múltiplos de 90°) — é isso que faltava usar depois.
     $largura_px = imagesx($rotada);
     $altura_px  = imagesy($rotada);
 
@@ -60,19 +55,21 @@ function rotacionarMoldura($caminhoOriginal, $angulo) {
     imagedestroy($rotada);
 
     return [
-        'caminho' => $tmp,
+        'caminho'    => $tmp,
         'largura_px' => $largura_px,
         'altura_px'  => $altura_px
     ];
 }
 
 $stmtCfg = $db->query("SELECT * FROM configuracao_convite WHERE id = 1");
-$cfg = $stmtCfg->fetch();
+$cfg = $stmtCfg->fetch(PDO::FETCH_ASSOC);
 
-$cor_p = hex2rgb($cfg['cor_primaria'] ?? '#2563eb');
-$cor_c = hex2rgb($cfg['cor_codigo'] ?? '#000000');
-$cor_f = hex2rgb($cfg['cor_fundo'] ?? '#ffffff');
-$cor_texto = hex2rgb($cfg['cor_texto'] ?? '#555555');
+$tipo_design = $cfg['tipo_design'] ?? 'MOLDURA';
+
+$cor_p     = hex2rgb($cfg['cor_primaria'] ?? '#2563eb');
+$cor_c     = hex2rgb($cfg['cor_codigo']   ?? '#000000');
+$cor_f     = hex2rgb($cfg['cor_fundo']    ?? '#ffffff');
+$cor_texto = hex2rgb($cfg['cor_texto']    ?? '#555555');
 
 $fonte       = $cfg['fonte_familia'] ?? 'AlexBrush';
 $fonte_texto = $cfg['fonte_texto']   ?? 'Montserrat';
@@ -86,21 +83,19 @@ $pdf = new FPDF('P', 'mm', [148, 150]);
 
 $pasta_fontes = __DIR__ . '/../fontes/';
 
-// Tamanho-base de cada fonte quando usada em TÍTULO (grande, destaque)
 $fontes_customizadas = [
-    'AlexBrush'          => ['path' => $pasta_fontes . 'Alex_Brush/AlexBrush-Regular',            'size_titulo' => 22],
-    'PinyonScript'       => ['path' => $pasta_fontes . 'Pinyon_Script/PinyonScript-Regular',       'size_titulo' => 22],
-    'Cinzel'             => ['path' => $pasta_fontes . 'Cinzel/Cinzel-Regular',                    'size_titulo' => 16],
+    'AlexBrush'          => ['path' => $pasta_fontes . 'Alex_Brush/AlexBrush-Regular',          'size_titulo' => 22],
+    'PinyonScript'       => ['path' => $pasta_fontes . 'Pinyon_Script/PinyonScript-Regular',     'size_titulo' => 22],
+    'Cinzel'             => ['path' => $pasta_fontes . 'Cinzel/Cinzel-Regular',                  'size_titulo' => 16],
     'CinzelDecorative'   => ['path' => $pasta_fontes . 'Cinzel_Decorative/CinzelDecorative-Regular','size_titulo' => 14],
     'CormorantGaramond'  => ['path' => $pasta_fontes . 'Cormorant_Garamond/CormorantGaramond-Regular','size_titulo' => 18],
     'PlayfairDisplay'    => ['path' => $pasta_fontes . 'Playfair_Display/PlayfairDisplay-Regular', 'size_titulo' => 16],
-    'Merriweather'       => ['path' => $pasta_fontes . 'Merriweather/Merriweather-Regular',        'size_titulo' => 15],
-    'Montserrat'         => ['path' => $pasta_fontes . 'Montserrat/Montserrat-Regular',            'size_titulo' => 14],
-    'Roboto'             => ['path' => $pasta_fontes . 'Roboto/Roboto-Regular',                    'size_titulo' => 14],
-    'Inter'              => ['path' => $pasta_fontes . 'Inter/Inter-Regular',                      'size_titulo' => 14]
+    'Merriweather'       => ['path' => $pasta_fontes . 'Merriweather/Merriweather-Regular',      'size_titulo' => 15],
+    'Montserrat'         => ['path' => $pasta_fontes . 'Montserrat/Montserrat-Regular',          'size_titulo' => 14],
+    'Roboto'             => ['path' => $pasta_fontes . 'Roboto/Roboto-Regular',                  'size_titulo' => 14],
+    'Inter'              => ['path' => $pasta_fontes . 'Inter/Inter-Regular',                    'size_titulo' => 14]
 ];
 
-// Registra uma fonte customizada no FPDF (aceita .json do FPDF moderno ou .php do formato antigo)
 function registrarFonteCustomizada($pdf, $nomeFonte, $fontesCustomizadas) {
     if (!array_key_exists($nomeFonte, $fontesCustomizadas)) return false;
     $basePath = $fontesCustomizadas[$nomeFonte]['path'];
@@ -114,16 +109,12 @@ function registrarFonteCustomizada($pdf, $nomeFonte, $fontesCustomizadas) {
     return false;
 }
 
-// Registra a fonte do título
 $titulo_ok = registrarFonteCustomizada($pdf, $fonte, $fontes_customizadas);
-
-// Registra a fonte do texto de apoio (só se for diferente da do título, para não duplicar)
-$apoio_ok = true;
+$apoio_ok  = true;
 if ($fonte_texto !== $fonte) {
     $apoio_ok = registrarFonteCustomizada($pdf, $fonte_texto, $fontes_customizadas);
 }
 
-// Nomes efetivos a usar no PDF (caem para Arial se o arquivo da fonte não existir)
 $fonte_titulo_pdf = $titulo_ok ? $fonte : 'Arial';
 $fonte_apoio_pdf  = $apoio_ok  ? $fonte_texto : 'Arial';
 
@@ -133,54 +124,53 @@ $pdf->AddPage();
 $pdf->SetFillColor($cor_f[0], $cor_f[1], $cor_f[2]);
 $pdf->Rect(0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight(), 'F');
 
-// Moldura (respeitando escala, posição e rotação definidas no preview)
+// Imagem de Fundo / Moldura
 if (!empty($cfg['imagem_fundo']) && $cfg['imagem_fundo'] !== 'nenhuma') {
     $caminho_moldura = '../img/molduras/' . $cfg['imagem_fundo'];
     if (file_exists($caminho_moldura)) {
-        // Tamanho original (antes de rotacionar), em pixels
-        list($orig_px_w, $orig_px_h) = getimagesize($caminho_moldura);
+        if ($tipo_design === 'LAYOUT_COMPLETO') {
+            // Layout completo ocupa 100% da área do convite
+            $pdf->Image($caminho_moldura, 0, 0, $pdf->GetPageWidth(), $pdf->GetPageHeight());
+        } else {
+            // Modo Moldura: aplica escala, posição e rotação
+            list($orig_px_w, $orig_px_h) = getimagesize($caminho_moldura);
 
-        // Largura/altura-alvo em mm SEM rotação, conforme a escala (100% = tamanho da página)
-        $img_w = $pdf->GetPageWidth()  * ($moldura_escala / 100);
-        $img_h = $pdf->GetPageHeight() * ($moldura_escala / 100);
+            $img_w = $pdf->GetPageWidth()  * ($moldura_escala / 100);
+            $img_h = $pdf->GetPageHeight() * ($moldura_escala / 100);
 
-        // Fator de conversão px -> mm baseado no tamanho original — usado também
-        // depois de rotacionar, pra não distorcer a imagem, só ampliar a "moldura" da tela
-        $escala_px_mm_x = $img_w / $orig_px_w;
-        $escala_px_mm_y = $img_h / $orig_px_h;
+            $escala_px_mm_x = $img_w / $orig_px_w;
+            $escala_px_mm_y = $img_h / $orig_px_h;
 
-        $caminho_final = $caminho_moldura;
-        $final_w = $img_w;
-        $final_h = $img_h;
+            $caminho_final = $caminho_moldura;
+            $final_w = $img_w;
+            $final_h = $img_h;
 
-        $rot = rotacionarMoldura($caminho_moldura, $moldura_rotacao);
-        if ($rot !== null) {
-            $caminho_final = $rot['caminho'];
-            $final_w = $rot['largura_px'] * $escala_px_mm_x;
-            $final_h = $rot['altura_px']  * $escala_px_mm_y;
-        }
+            $rot = rotacionarMoldura($caminho_moldura, $moldura_rotacao);
+            if ($rot !== null) {
+                $caminho_final = $rot['caminho'];
+                $final_w = $rot['largura_px'] * $escala_px_mm_x;
+                $final_h = $rot['altura_px']  * $escala_px_mm_y;
+            }
 
-        // O preview usa deslocamento em px sobre uma caixa de ~350px de largura;
-        // convertendo essa proporção para mm da página do PDF
-        $fator_px_para_mm = $pdf->GetPageWidth() / 350;
-        $offset_x = $moldura_pos_x * $fator_px_para_mm;
-        $offset_y = $moldura_pos_y * $fator_px_para_mm;
+            $fator_px_para_mm = $pdf->GetPageWidth() / 350;
+            $offset_x = $moldura_pos_x * $fator_px_para_mm;
+            $offset_y = $moldura_pos_y * $fator_px_para_mm;
 
-        // Centraliza a moldura (já rotacionada, se houver) e aplica o deslocamento
-        $img_x = ($pdf->GetPageWidth()  - $final_w) / 2 + $offset_x;
-        $img_y = ($pdf->GetPageHeight() - $final_h) / 2 + $offset_y;
+            $img_x = ($pdf->GetPageWidth()  - $final_w) / 2 + $offset_x;
+            $img_y = ($pdf->GetPageHeight() - $final_h) / 2 + $offset_y;
 
-        $pdf->Image($caminho_final, $img_x, $img_y, $final_w, $final_h);
+            $pdf->Image($caminho_final, $img_x, $img_y, $final_w, $final_h);
 
-        if ($caminho_final !== $caminho_moldura) {
-            @unlink($caminho_final);
+            if ($caminho_final !== $caminho_moldura) {
+                @unlink($caminho_final);
+            }
         }
     }
 }
 
 $pdf->SetY(18);
 
-// Subtítulo (texto de apoio)
+// Subtítulo
 if (!empty($cfg['subtitulo_evento'])) {
     $pdf->SetFont($fonte_apoio_pdf, '', 7);
     $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
@@ -188,13 +178,13 @@ if (!empty($cfg['subtitulo_evento'])) {
     $pdf->Ln(1);
 }
 
-// Título Principal (fonte de títulos)
+// Título Principal
 $tamanho_titulo = $fontes_customizadas[$fonte]['size_titulo'] ?? 16;
 $pdf->SetFont($fonte_titulo_pdf, '', $tamanho_titulo);
 $pdf->SetTextColor($cor_p[0], $cor_p[1], $cor_p[2]);
 $pdf->Cell(0, 8, utf8_decode($cfg['titulo_evento']), 0, 1, 'C');
 
-// Divisor ornamentado: linha - bolinha - linha
+// Divisor ornamentado
 $y = $pdf->GetY() + 3;
 $pdf->SetDrawColor($cor_p[0], $cor_p[1], $cor_p[2]);
 $pdf->SetLineWidth(0.15);
@@ -202,11 +192,11 @@ $pdf->Line(48, $y, 70, $y);
 $pdf->Line(78, $y, 100, $y);
 
 $pdf->SetFillColor($cor_p[0], $cor_p[1], $cor_p[2]);
-$pdf->Rect(73.3, $y - 0.7, 1.4, 1.4, 'F'); // quadradinho central (bem pequeno, quase imperceptível que não é losango)
+$pdf->Rect(73.3, $y - 0.7, 1.4, 1.4, 'F');
 
 $pdf->Ln(8);
 
-// Convidado — rótulo em fonte de apoio, nome em fonte de títulos (destaque, acompanha o título)
+// Convidado
 $pdf->SetFont($fonte_apoio_pdf, '', 8);
 $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
 $pdf->Cell(0, 4, utf8_decode('Convidado(a) Especial:'), 0, 1, 'C');
@@ -226,7 +216,7 @@ if (!empty($cfg['hora_evento'])) {
     $data_str = $data_str ? ($data_str . ' - ' . $hora_formatada) : $hora_formatada;
 }
 
-// Bloco de Informações do Evento (texto de apoio)
+// Bloco de Informações do Evento
 if ($data_str || !empty($cfg['local_evento']) || !empty($cfg['traje_evento'])) {
     $y_bloco = $pdf->GetY();
 
@@ -251,15 +241,13 @@ if ($data_str || !empty($cfg['local_evento']) || !empty($cfg['traje_evento'])) {
     $pdf->Ln(6);
 }
 
-// Bloco de QR Code e Código de Acesso (rótulo em fonte de apoio, código em Arial Bold para legibilidade)
+// Bloco de QR Code e Código de Acesso
 if (!empty($cfg['exibir_qrcode']) && $cfg['exibir_qrcode'] == 1) {
     $qr_url = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . $convidado['codigo_unico'];
     $y_qr = $pdf->GetY();
 
-    // QR Code alinhado à esquerda do centro
     $pdf->Image($qr_url, 40, $y_qr, 16, 16, 'PNG');
 
-    // Texto alinhado à direita do QR Code
     $pdf->SetY($y_qr + 2);
     $pdf->SetX(60);
     $pdf->SetFont($fonte_apoio_pdf, '', 7);
@@ -282,7 +270,7 @@ if (!empty($cfg['exibir_qrcode']) && $cfg['exibir_qrcode'] == 1) {
     $pdf->Ln(3);
 }
 
-// Rodapé (texto de apoio)
+// Rodapé
 if (!empty($cfg['mensagem_rodape'])) {
     $pdf->SetFont($fonte_apoio_pdf, '', 7);
     $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
