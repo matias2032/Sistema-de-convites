@@ -107,7 +107,13 @@ $url_base = $protocolo . "://" . $_SERVER['HTTP_HOST'] . $caminho_atual . "/";
     <div class="app-layout">
         <?= $sidebar_html ?>
         <main class="main-content">
-         
+            
+         <!-- Botão para exportar a lista completa -->
+<div style="margin-bottom: 15px; display: flex; justify-content: flex-end;">
+    <a href="../services/exportar_lista_pdf.php" target="_blank" class="btn-action btn-action-pdf" style="padding: 8px 16px; font-size: 0.9rem;">
+        <i class="fa-solid fa-file-pdf" style="margin-right: 6px;"></i> Exportar Lista (PDF)
+    </a>
+</div>
             <h2>Convidados</h2>
             <div class="table-responsive">
             <table border="1" cellpadding="8" cellspacing="0">
