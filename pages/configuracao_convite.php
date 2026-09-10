@@ -468,10 +468,10 @@ $config = [
 
         if (prevBox) prevBox.style.fontFamily = fonteApoio;
 
-        if (modo === 'LAYOUT_COMPLETO') {
-            [prevSubtitulo, prevTitulo, prevDivisor, prevInfoBox, prevRodape].forEach(el => {
-                if (el) el.style.display = 'none';
-            });
+if (modo === 'LAYOUT_COMPLETO') {
+    [prevSubtitulo, prevTitulo, prevDivisor, prevInfoBox, prevRodape].forEach(el => {
+        if (el) el.style.display = 'block';
+    });
 
             const temImagem = layoutCustomDataUrl || (selectImg && selectImg.value && selectImg.value !== 'nenhuma');
 
