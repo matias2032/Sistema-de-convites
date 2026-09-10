@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_qr'])) {
     header('Content-Type: application/json');
     $codigo = trim($_POST['codigo_qr']);
 
-    $stmt = $db->prepare("SELECT * FROM convidados WHERE codigo_acesso = :codigo OR id = :id");
+    $stmt = $db->prepare("SELECT * FROM convidado WHERE codigo_unico = :codigo OR id_convidado = :id");
     $stmt->execute([':codigo' => $codigo, ':id' => $codigo]);
     $convidado = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -21,18 +21,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_qr'])) {
         exit;
     }
 
-    if ($convidado['confirmado']) {
+    if ($convidado['status'] === 'CANCELADO') {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Este convite foi CANCELADO!',
+            'convidado' => $convidado
+        ]);
+        exit;
+    }
+
+    if ($convidado['data_hora_entrada']) {
         echo json_encode([
             'status' => 'warning',
-            'message' => 'Este convite JÁ FOI UTILIZADO!',
+            'message' => 'Este convite JÁ FOI UTILIZADO em ' . date('d/m/Y H:i', strtotime($convidado['data_hora_entrada'])) . '!',
             'convidado' => $convidado
         ]);
         exit;
     }
 
     // Marcar como presente
-    $update = $db->prepare("UPDATE convidados SET confirmado = 1, data_confirmacao = NOW() WHERE id = :id");
-    $update->execute([':id' => $convidado['id']]);
+    $update = $db->prepare("UPDATE convidado SET status = 'EMITIDO', data_hora_entrada = NOW() WHERE id_convidado = :id");
+    $update->execute([':id' => $convidado['id_convidado']]);
 
     echo json_encode([
         'status' => 'success',
@@ -132,9 +141,9 @@ function exibirResultado(data) {
 
     if (data.convidado) {
         document.getElementById('res-detalhes').style.display = 'block';
-        document.getElementById('res-nome').innerText = data.convidado.nome;
+        document.getElementById('res-nome').innerText = data.convidado.nome_completo;
         document.getElementById('res-tipo').innerText = data.convidado.tipo_convite || 'INDIVIDUAL';
-        document.getElementById('res-acompanhantes').innerText = data.convidado.qtd_acompanhantes || 0;
+        document.getElementById('res-acompanhantes').innerText = data.convidado.quantidade_acompanhantes || 0;
     } else {
         document.getElementById('res-detalhes').style.display = 'none';
     }
