@@ -117,10 +117,12 @@ $url_base = $protocolo . "://" . $_SERVER['HTTP_HOST'] . $caminho_atual . "/";
             <h2>Convidados</h2>
             <div class="table-responsive">
             <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
+<thead>
             <tr>
                 <th>Código</th>
-                <th>Nome</th>
+                <th>Nome / Integrantes</th>
+                <th>Tipo</th>
+                <th>Acom.</th>
                 <th>Documento</th>
                 <th>Telefone</th>
                 <th>Status</th>
@@ -140,8 +142,13 @@ $url_base = $protocolo . "://" . $_SERVER['HTTP_HOST'] . $caminho_atual . "/";
 <tr>
     <td><b><?= htmlspecialchars($c['codigo_unico']) ?></b></td>
     <td><?= htmlspecialchars($c['nome_completo']) ?></td>
-    <td><?= htmlspecialchars($c['documento_id']) ?></td>
-    <td><?= htmlspecialchars($c['telefone'] ?? 'N/A') ?></td>
+    <td>
+        <span class="badge-tipo <?= strtolower($c['tipo_convite'] ?? 'individual') ?>">
+            <?= htmlspecialchars($c['tipo_convite'] ?? 'INDIVIDUAL') ?>
+        </span>
+    </td>
+    <td><b><?= (int)($c['quantidade_acompanhantes'] ?? 0) ?></b></td>
+        <td><?= htmlspecialchars($c['telefone'] ?? 'N/A') ?></td>
     <td><?= htmlspecialchars($c['status']) ?></td>
     <td class="actions-cell">
         <!-- 1. Editar -->

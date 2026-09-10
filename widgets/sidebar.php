@@ -39,6 +39,12 @@ $inicial_nome = strtoupper(substr($nome_usuario, 0, 1));
                     </a>
                 </li>
                 <li>
+                    <a href="scanner.php" class="<?= $pagina_atual === 'scanner.php' ? 'active' : '' ?>">
+                        <i class="fa-solid fa-qrcode sidebar-icon"></i>
+                        <span>Validar Entrada</span>
+                    </a>
+                </li>
+                <li>
                     <a href="configuracao_convite.php" class="<?= $pagina_atual === 'configuracao_convite.php' ? 'active' : '' ?>">
                         <i class="fa-solid fa-wand-magic-sparkles sidebar-icon"></i>
                         <span>Personalizar Convite</span>

@@ -83,38 +83,80 @@ $pdf = new FPDF('P', 'mm', [148, 150]);
 
 $pasta_fontes = __DIR__ . '/../fontes/';
 
+// Configurações de tamanhos e metadados das fontes suportadas
 $fontes_customizadas = [
-    'AlexBrush'          => ['path' => $pasta_fontes . 'Alex_Brush/AlexBrush-Regular',          'size_titulo' => 22],
-    'PinyonScript'       => ['path' => $pasta_fontes . 'Pinyon_Script/PinyonScript-Regular',     'size_titulo' => 22],
-    'Cinzel'             => ['path' => $pasta_fontes . 'Cinzel/Cinzel-Regular',                  'size_titulo' => 16],
-    'CinzelDecorative'   => ['path' => $pasta_fontes . 'Cinzel_Decorative/CinzelDecorative-Regular','size_titulo' => 14],
-    'CormorantGaramond'  => ['path' => $pasta_fontes . 'Cormorant_Garamond/CormorantGaramond-Regular','size_titulo' => 18],
-    'PlayfairDisplay'    => ['path' => $pasta_fontes . 'Playfair_Display/PlayfairDisplay-Regular', 'size_titulo' => 16],
-    'Merriweather'       => ['path' => $pasta_fontes . 'Merriweather/Merriweather-Regular',      'size_titulo' => 15],
-    'Montserrat'         => ['path' => $pasta_fontes . 'Montserrat/Montserrat-Regular',          'size_titulo' => 14],
-    'Roboto'             => ['path' => $pasta_fontes . 'Roboto/Roboto-Regular',                  'size_titulo' => 14],
-    'Inter'              => ['path' => $pasta_fontes . 'Inter/Inter-Regular',                    'size_titulo' => 14]
+    'AlexBrush'          => ['size_titulo' => 22],
+    'PinyonScript'       => ['size_titulo' => 22],
+    'Cinzel'             => ['size_titulo' => 16],
+    'CinzelDecorative'   => ['size_titulo' => 14],
+    'CormorantGaramond'  => ['size_titulo' => 18],
+    'PlayfairDisplay'    => ['size_titulo' => 16],
+    'Merriweather'       => ['size_titulo' => 15],
+    'Montserrat'         => ['size_titulo' => 14],
+    'Roboto'             => ['size_titulo' => 14],
+    'Inter'              => ['size_titulo' => 14]
 ];
 
-function registrarFonteCustomizada($pdf, $nomeFonte, $fontesCustomizadas) {
-    if (!array_key_exists($nomeFonte, $fontesCustomizadas)) return false;
-    $basePath = $fontesCustomizadas[$nomeFonte]['path'];
-    if (file_exists($basePath . '.json')) {
-        $pdf->AddFont($nomeFonte, '', basename($basePath) . '.json', dirname($basePath) . '/');
-        return true;
-    } elseif (file_exists($basePath . '.php')) {
-        $pdf->AddFont($nomeFonte, '', basename($basePath) . '.php', dirname($basePath) . '/');
-        return true;
+/**
+ * Tenta registrar uma fonte varrendo automaticamente os subdiretórios
+ * Procura por arquivos .json ou .php de acordo com a variação de nomes (Ex: Cinzel-Regular, Cinzel_Regular, etc)
+ */
+function registrarFonteCustomizada($pdf, $nomeFonte, $pastaBase) {
+    if (empty($nomeFonte) || in_array(strtolower($nomeFonte), ['arial', 'times', 'helvetica', 'courier'])) {
+        return false;
+    }
+
+    // Procura na pasta raiz e subpastas da fonte
+    $diretorios = glob($pastaBase . '*', GLOB_ONLYDIR);
+    $diretorios[] = $pastaBase;
+
+    foreach ($diretorios as $dir) {
+        $dir = rtrim($dir, '/') . '/';
+        
+        // Padrões de nomes de arquivos (.json e .php)
+        $padroes = [
+            $nomeFonte . '-Regular',
+            $nomeFonte . '_Regular',
+            $nomeFonte,
+            str_replace('_', '', $nomeFonte) . '-Regular',
+            str_replace('_', '', $nomeFonte)
+        ];
+
+        foreach ($padroes as $nomeArquivo) {
+            // Tenta formato JSON
+            if (file_exists($dir . $nomeArquivo . '.json')) {
+                $pdf->AddFont($nomeFonte, '', $nomeArquivo . '.json', $dir);
+                
+                // Se existir a variante Bold, registra também
+                $nomeBold = str_replace(['Regular', 'regular'], ['Bold', 'bold'], $nomeArquivo);
+                if (file_exists($dir . $nomeBold . '.json')) {
+                    $pdf->AddFont($nomeFonte, 'B', $nomeBold . '.json', $dir);
+                }
+                return true;
+            }
+            // Tenta formato PHP (legado FPDF)
+            if (file_exists($dir . $nomeArquivo . '.php')) {
+                $pdf->AddFont($nomeFonte, '', $nomeArquivo . '.php', $dir);
+                
+                $nomeBold = str_replace(['Regular', 'regular'], ['Bold', 'bold'], $nomeArquivo);
+                if (file_exists($dir . $nomeBold . '.php')) {
+                    $pdf->AddFont($nomeFonte, 'B', $nomeBold . '.php', $dir);
+                }
+                return true;
+            }
+        }
     }
     return false;
 }
 
-$titulo_ok = registrarFonteCustomizada($pdf, $fonte, $fontes_customizadas);
+// Registra a fonte do título e do texto
+$titulo_ok = registrarFonteCustomizada($pdf, $fonte, $pasta_fontes);
 $apoio_ok  = true;
 if ($fonte_texto !== $fonte) {
-    $apoio_ok = registrarFonteCustomizada($pdf, $fonte_texto, $fontes_customizadas);
+    $apoio_ok = registrarFonteCustomizada($pdf, $fonte_texto, $pasta_fontes);
 }
 
+// Fallback para Arial se a fonte especificada não for encontrada
 $fonte_titulo_pdf = $titulo_ok ? $fonte : 'Arial';
 $fonte_apoio_pdf  = $apoio_ok  ? $fonte_texto : 'Arial';
 
@@ -196,15 +238,33 @@ $pdf->Rect(73.3, $y - 0.7, 1.4, 1.4, 'F');
 
 $pdf->Ln(8);
 
-// Convidado
+// Convidado e Tipo de Convite
 $pdf->SetFont($fonte_apoio_pdf, '', 8);
 $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
-$pdf->Cell(0, 4, utf8_decode('Convidado(a) Especial:'), 0, 1, 'C');
+
+$tipo_convite = $convidado['tipo_convite'] ?? 'INDIVIDUAL';
+$rotulo = 'Convidado(a) Especial:';
+if ($tipo_convite === 'CASAL') {
+    $rotulo = 'Casal Convidado:';
+} elseif ($tipo_convite === 'FAMILIA') {
+    $rotulo = 'Família / Grupo Convidado:';
+}
+
+$pdf->Cell(0, 4, utf8_decode($rotulo), 0, 1, 'C');
 
 $pdf->SetFont($fonte_titulo_pdf, '', min(14, $tamanho_titulo * 0.6));
 $pdf->SetTextColor($cor_p[0], $cor_p[1], $cor_p[2]);
 $pdf->Cell(0, 7, utf8_decode($convidado['nome_completo']), 0, 1, 'C');
-$pdf->Ln(3);
+
+// Exibição de acompanhantes extras caso seja Família/Grupo
+if ($tipo_convite === 'FAMILIA' && !empty($convidado['quantidade_acompanhantes'])) {
+    $pdf->SetFont($fonte_apoio_pdf, 'B', 7);
+    $pdf->SetTextColor($cor_texto[0], $cor_texto[1], $cor_texto[2]);
+    $total_passas = (int)$convidado['quantidade_acompanhantes'] + 1;
+    $pdf->Cell(0, 4, utf8_decode("(Válido para até {$total_passas} pessoas)"), 0, 1, 'C');
+}
+
+$pdf->Ln(2);
 
 // Tratamento de Data e Hora
 $data_str = '';
